@@ -8,7 +8,7 @@ import { styles } from "../../Style";
 import { Button } from "../../components/atoms/Button";
 
 /*- Backend / Account api URL -*/
-const URL = "https://wss.artur.red/api/";
+const URL = "https://artur.red/api/";
 
 export default class SignUp extends React.PureComponent {
 
@@ -56,55 +56,55 @@ export default class SignUp extends React.PureComponent {
 	/*- signup -*/
 	signup = async () => {
 
-		/*- Check if the email and password are valid -*/
-		if (this.state.email.length == 0) {
-			alert("Please enter your email.");
-			return;
-		}else if (this.state.password.length == 0) {
-			alert("Please enter your password.");
-			return;
-		}
+		/*- Check if the inputs contain something -*/
+		if (this.state.username.length == 0) { return alert("Please enter your username."); }
+		if (this.state.displayname.length == 0) { return alert("Please enter your displayname."); }
+		if (this.state.email.length == 0) { return alert("Please enter your email."); }
+		if (this.state.password.length == 0) { return alert("Please enter your password."); }
 
 		/*- Show that the request is being processed -*/
 		this.setState({ loading: true });
 
 		/*- Send the request to the backend -*/
 		let response = await fetch(URL + "create-account", {
-			method: "GET",
+			method: "POST",
 			headers: {
 				"Accept": "application/json",
 				"Content-Type": "application/json",
+				username: this.state.username,
+				displayname: this.state.displayname,
 				email: this.state.email,
 				password: this.state.password,
 			},
 		});
+
 
 		/*- Check if the request was successful -*/
 		if (response.status == 200) {
 			/*- Get the response -*/
 			let responseJson = await response.json();
 
-			console.log(responseJson)
-			/*- The request can be 200 but the response code might be 400, becuase password / email was incorrect -*/
-			if(responseJson.status == 200 ){
-				/*- Save the token to the device -*/
-				await AsyncStorage.setItem("token", responseJson.data.uid);
+			/*- Check if the request was successful -*/
+			if (responseJson.success) {
+				/*- Save all items -*/
+				for (var key in responseJson.data) {
+					await AsyncStorage.setItem(key, responseJson.data[key]);
+				}
+
+				/*- Hide the loading indicator -*/
+				this.setState({ loading: false });
 
 				/*- Navigate to the home screen -*/
 				this.props.navigation.navigate("Home");
 			}else{
+				/*- Show the error message -*/
 				alert(responseJson.message);
+
+				/*- Hide the loading indicator -*/
+				this.setState({ loading: false });
 			}
-
-			/*- Hide the loading indicator -*/
-			this.setState({ loading: false });
-		} else {
-			/*- Show the error -*/
-			alert("Server error.");
-
-			/*- Hide the loading indicator -*/
-			this.setState({ loading: false });
 		}
+		
 	}
 
 	render() {

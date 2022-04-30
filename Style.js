@@ -113,6 +113,42 @@ const styles = StyleSheet.create({
 		width: REM(10),
 		height: REM(10),
 	},
+
+	topnav: {
+		width,
+		height: 120,
+		borderBottomWidth: 1,
+		borderBottomColor: "#ccc",
+
+		paddingTop: 40,
+		paddingHorizontal: 15,
+
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	h1: {
+		fontSize: REM(2.5),
+		fontWeight: "bold",
+		color: "#000",
+	},
+	h2: {
+		fontSize: REM(2),
+		fontWeight: "bold",
+		color: "#000",
+	},
+
+	accountBubble: {
+		height: "70%",
+		aspectRatio: 1,
+		borderRadius: 50,
+	},
+	accountBubbleImage: {
+		width: "100%",
+		height: "100%",
+		borderRadius: 50,
+	},
 });
 
 export {

@@ -2,15 +2,11 @@
 
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TextInput, KeyboardAvoidingView, TouchableOpacity, Text, Image, ActivityIndicator } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, KeyboardAvoidingView, Image } from "react-native";
 import { styles } from "../../Style";
 import { Button } from "../../components/atoms/Button";
 
-/*- Backend / Account api URL -*/
-const URL = "https://wss.artur.red/api/";
-
-export default class SignUp extends React.PureComponent {
+export default class Register extends React.PureComponent {
 
 	/*- Construct the component -*/
 	constructor(props) {

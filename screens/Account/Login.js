@@ -8,7 +8,7 @@ import { styles } from "../../Style";
 import { Button } from "../../components/atoms/Button";
 
 /*- Backend / Account api URL -*/
-const URL = "https://wss.artur.red/api/";
+const URL = "https://artur.red/api/";
 
 export default class Login extends React.PureComponent {
 
@@ -73,10 +73,13 @@ export default class Login extends React.PureComponent {
 			console.log(responseJson)
 			/*- The request can be 200 but the response code might be 400, becuase password / email was incorrect -*/
 			if(responseJson.status == 200 ){
-				/*- Save the token to the device -*/
-				await AsyncStorage.setItem("token", responseJson.data.uid);
 
-				/*- Navigate to the home screen -*/
+				/*- Save all items -*/
+				for (var key in responseJson.data) {
+					await AsyncStorage.setItem(key, responseJson.data[key]);
+				}
+
+				/*- Go to the home screen -*/
 				this.props.navigation.navigate("Home");
 			}else{
 				alert(responseJson.message);

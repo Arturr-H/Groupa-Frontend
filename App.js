@@ -8,6 +8,9 @@ import Login from "./screens/Account/Login";
 import SignUp from "./screens/Account/SignUp";
 import Register from "./screens/Account/Register";
 
+/*- Mains -*/
+import Home from "./screens/Main/Home";
+
 /*- Create the stack navigator -*/
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +25,10 @@ export default function App() {
 					<Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: true, headerTransparent: true, headerTitle: "", headerBackTitle: "Back" }}/>
 					<Stack.Screen name="Login" component={Login} options={{ headerShown: true, headerTransparent: true, headerTitle: "", headerBackTitle: "Back" }}/>
 
+					{/*- Mains -*/}
+					{/*- We set gestureEnabled to false, because the
+						 users shouldn't be able to swipe back to login -*/}
+					<Stack.Screen name="Home" component={Home} options={{ headerShown: false, gestureEnabled: false }}/>
 				</Stack.Navigator>
 			</NavigationContainer>
 		</React.Fragment>

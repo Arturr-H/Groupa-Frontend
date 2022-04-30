@@ -39,7 +39,7 @@ export default class SignUp extends React.PureComponent {
 	/*- When the component is mounted -*/
 	componentDidMount() {
 		/*- Focus the first input -*/
-		this.inputNameRef.current.focus();
+		// this.inputNameRef.current.focus();
 	}
 
 	/*- When the component is unmounted -*/
@@ -109,13 +109,13 @@ export default class SignUp extends React.PureComponent {
 
 	render() {
 		return (
-			<View style={styles.accountContainer}>
+			<KeyboardAvoidingView behavior="position" style={styles.accountContainer}>
 				<View style={styles.logoContainer}>
 					<Image source={require("../../assets/icon.png")} style={styles.logo} />
 				</View>
 
 				{/*- Dodge the built-in keyboard -*/}
-				<KeyboardAvoidingView behavior="position" style={styles.bottomViewLarge}>
+				<View style={styles.bottomViewLarge}>
 					{/*- Username input -*/}
 					<TextInput
 						style                = {styles.input}
@@ -130,6 +130,7 @@ export default class SignUp extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ username: text })}
 						value                = {this.state.username}
 						ref                  = {this.inputNameRef}
+						blurOnSubmit		 = {false}
 					/>
 
 					{/*- Displayname input -*/}
@@ -146,6 +147,7 @@ export default class SignUp extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ displayname: text })}
 						value                = {this.state.displayname}
 						ref                  = {this.inputDisplaynameRef}
+						blurOnSubmit		 = {false}
 					/>
 					
 					{/*- Email input -*/}
@@ -162,6 +164,7 @@ export default class SignUp extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ email: text })}
 						value                = {this.state.email}
 						ref                  = {this.inputEmailRef}
+						blurOnSubmit		 = {false}
 					/>
 
 					{/*- Password input -*/}
@@ -178,6 +181,7 @@ export default class SignUp extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ password: text })}
 						value                = {this.state.password}
 						ref                  = {this.inputPasswordRef}
+						blurOnSubmit		 = {false}
 					/>
 
 					<Button onPress={this.signup}>
@@ -187,10 +191,10 @@ export default class SignUp extends React.PureComponent {
 								: "Sign Up"
 						}
 					</Button>
-				</KeyboardAvoidingView>
+				</View>
 				
 				<StatusBar style="auto" />
-			</View>
+			</KeyboardAvoidingView>
 		);
 	}
 }

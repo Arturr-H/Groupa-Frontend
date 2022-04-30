@@ -1,4 +1,7 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Dimensions } from "react-native";
+
+/*- Sometimes % doens't work -*/
+const { width, height } = Dimensions.get("window");
 
 /*- Default styles -*/
 const Default = {
@@ -39,12 +42,13 @@ const styles = StyleSheet.create({
 			alignItems: "center",
 
 		flex: 1,
+		width: "100%",
 	},
 	bottomView: {
 		backgroundColor: "#fff",
 
-		width: "100%",
-		height: 300,
+		width: width - 40,
+		height: 275,
 
 		borderTopRightRadius: 20,
 		borderTopLeftRadius: 20,
@@ -57,11 +61,11 @@ const styles = StyleSheet.create({
 	bottomViewLarge: {
 		backgroundColor: "#fff",
 
-		width: "100%",
-		height: 425,
+		width: width - 40,
+		height: 400,
 
-		borderTopRightRadius: 20,
 		borderTopLeftRadius: 20,
+		borderTopRightRadius: 20,
 
 		paddingHorizontal: 20,
 		paddingTop: 20,

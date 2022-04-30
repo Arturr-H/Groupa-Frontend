@@ -2,9 +2,10 @@
 
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TextInput, KeyboardAvoidingView, TouchableOpacity, Text, Image, ActivityIndicator } from "react-native";
+import { View, TextInput, KeyboardAvoidingView, Keyboard, Image, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { styles } from "../../Style";
+import { Button } from "../../components/atoms/Button";
 
 /*- Backend / Account api URL -*/
 const URL = "https://wss.artur.red/api/";
@@ -27,12 +28,6 @@ export default class Login extends React.PureComponent {
 
 		/*- Bind the functions -*/
 		this.login = this.login.bind(this);
-	}
-
-	/*- When the component is mounted -*/
-	componentDidMount() {
-		/*- Focus the first input -*/
-		this.inputEmailRef.current.focus();
 	}
 
 	/*- When the component is unmounted -*/
@@ -100,16 +95,13 @@ export default class Login extends React.PureComponent {
 
 	render() {
 		return (
-			<View style={styles.accountContainer}>
+			<KeyboardAvoidingView behavior="padding" style={styles.accountContainer}>
 				<View style={styles.logoContainer}>
 					<Image source={require("../../assets/icon.png")} style={styles.logo} />
 				</View>
 
 				{/*- Dodge the built-in keyboard -*/}
-				<KeyboardAvoidingView
-					behavior="position"
-					style={styles.bottomView}
-				>
+				<View style={styles.bottomView}>
 					{/*- Email input -*/}
 					<TextInput
 						style                = {styles.input}
@@ -124,6 +116,7 @@ export default class Login extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ email: text })}
 						value                = {this.state.email}
 						ref                  = {this.inputEmailRef}
+						blurOnSubmit		 = {false}
 					/>
 
 					{/*- Password input -*/}
@@ -140,24 +133,20 @@ export default class Login extends React.PureComponent {
 						onChangeText         = {(text) => this.setState({ password: text })}
 						value                = {this.state.password}
 						ref                  = {this.inputPasswordRef}
+						blurOnSubmit		 = {false}
+						onSubmitEditing      = {() => Keyboard.dismiss()}
 					/>
 
-					<TouchableOpacity
-						style                = {styles.submitInput}
-						// onPress              = {() => this.props.navigation.navigate("Home")}
-						activeOpacity	     = {0.8}
-						onPressOut           = {this.login}
-					>
+					<Button onPress={this.login}>
 						{
 							this.state.loading
 								? <ActivityIndicator />
-								: <Text style={styles.submitInputText}>Login</Text>
+								: "Login"
 						}
-					</TouchableOpacity>
-				</KeyboardAvoidingView>
-				
+					</Button>
+				</View>
 				<StatusBar style="auto" />
-			</View>
+			</KeyboardAvoidingView>
 		);
 	}
 }

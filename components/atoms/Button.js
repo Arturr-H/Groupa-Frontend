@@ -1,6 +1,7 @@
 import { styles } from "../../Style";
 import { TouchableOpacity, Text } from "react-native";
 import React from "react";
+import { Haptic } from "../../func/Haptic";
 
 class Button extends React.PureComponent {
     constructor(props) {
@@ -12,7 +13,10 @@ class Button extends React.PureComponent {
         return (
             <TouchableOpacity
                 style                = {styles.submitInput}
-                onPress              = {() => this.props.onPress()}
+                onPress              = {() => {
+                    this.props.onPress();
+                    Haptic("medium");
+                }}
                 activeOpacity	     = {0.8}
             >
                 <Text style={styles.submitInputText}>{this.props.children}</Text>
@@ -20,7 +24,30 @@ class Button extends React.PureComponent {
         );
     }
 }
+class StartButton extends React.PureComponent {
+    constructor(props) {
+        super(props);
+    }
+       
+    /*- Render the StartButton -*/
+    render() {
+        return (
+            <TouchableOpacity
+                style                = {styles.startButton}
+                onPress              = {() => {
+                    this.props.onPress();
+                    Haptic("medium");
+                }}
+                activeOpacity	     = {0.8}
+                >
+                <Text style={styles.submitInputText}>{this.props.children}</Text>
+            </TouchableOpacity>
+        );
+    }
+}
+
 
 export {
-    Button
+    Button,
+    StartButton
 }

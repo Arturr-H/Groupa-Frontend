@@ -13,7 +13,7 @@ class TopNav extends React.PureComponent {
         return (
             <React.Fragment>
                 <View style={styles.topnav}>
-                    <H1>Hej</H1>
+                    <H1>Friends</H1>
                     <AccountBubble
                         src={this.props.imageURL}
                         onPress={() => {}}

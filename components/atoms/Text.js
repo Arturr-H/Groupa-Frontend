@@ -14,4 +14,10 @@ const H2 = ({ children, ...props }) => (
     </Text>
 );
 
-export { H1, H2 }
+const BIGTEXT = ({ children, ...props }) => (
+    <Text style={styles.bigtext} {...props}>
+        {children}
+    </Text>
+);
+
+export { H1, H2, BIGTEXT }

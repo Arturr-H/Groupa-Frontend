@@ -42,7 +42,8 @@ const styles = StyleSheet.create({
 			alignItems: "center",
 
 		flex: 1,
-		width: "100%",
+		width,
+		height,
 	},
 	bottomView: {
 		backgroundColor: "#fff",
@@ -143,12 +144,93 @@ const styles = StyleSheet.create({
 		height: "70%",
 		aspectRatio: 1,
 		borderRadius: 50,
+
+		...Default.border,
 	},
 	accountBubbleImage: {
 		width: "100%",
 		height: "100%",
 		borderRadius: 50,
 	},
+
+	friendRow: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+
+		width,
+		paddingHorizontal: 20,
+		paddingVertical: 10,
+
+		borderBottomColor: "#eee",
+		borderBottomWidth: 1,
+	},
+	friendRowInner: {
+		display: "flex",
+		flexDirection: "row",
+	},
+	friendRowImage: {
+		width: 45,
+		height: 45,
+		borderRadius: 50,
+
+		marginRight: 10,
+
+		...Default.border,
+	},
+	friendRowTextContainer: {
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "center",
+		alignItems: "flex-start",
+	},
+	friendRowDisplayname: {
+		fontSize: REM(1),
+		fontWeight: "bold",
+		color: "#000",
+	},
+	friendRowUsername: {
+		fontSize: REM(0.8),
+		color: "#999",
+	},
+
+	statusBlob: {
+		width: 15,
+		height: 15,
+		borderRadius: 50,
+		backgroundColor: "green",
+
+		left: -2,
+		bottom: -2,
+		position: "absolute",
+
+		borderColor: "white",
+		borderWidth: 2,
+	},
+
+	startButton: {
+		backgroundColor: "#fc6b68",
+
+		height: 50,
+		width: "80%",
+
+		borderRadius: 25,
+		bottom: 40,
+
+		position: "absolute",
+
+		display: "flex",
+		justifyContent: "center",
+			alignItems: "center",
+	},
+
+	bigtext: {
+		fontSize: REM(2.5),
+		fontWeight: "900",
+		color: "#000",	
+		fontFamily: "PoppinsBold"
+	}
 });
 
 export {

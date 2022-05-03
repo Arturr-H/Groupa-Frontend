@@ -18,7 +18,7 @@ class FriendGetter extends React.PureComponent {
 		this.getFriends = this.getFriends.bind(this);
 	}
 
-	/*- This function is called when the component is mounted -*/
+	/*- Initialization -*/
 	componentDidMount() {
 		this.getFriends();
 	}

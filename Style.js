@@ -14,7 +14,8 @@ const stylevar = {
 		light: "#999"
 	},
 	colors: {
-		main: "#fc6b68"
+		main: "#fc6b68",
+		secondary: "#8798dc",
 	}
 }
 
@@ -252,23 +253,23 @@ const styles = StyleSheet.create({
 		fontFamily: "PoppinsBold"
 	},
 
-	notice: {
+	toast: {
+		backgroundColor: stylevar.colors.secondary,
+		borderRadius: 10,
+		padding: 10,
+		bottom: 0,
+
 		width: "80%",
 		height: 60,
-		borderRadius: 10,
+		position: "absolute",
+		zIndex: 10,
+
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
 
 		...Default.shadow,
-		position: "absolute",
-		bottom: 60,
-		zIndex: 3,
-
-		backgroundColor: "rgb(133, 168, 208)",
-		alignSelf: "center",
-		flexDirection: "row",
-
-		alignItems: "center",
-		paddingHorizontal: 15,
-		paddingVertical: 10,
 	},
 	noticeIcon: {
 		width: 30,

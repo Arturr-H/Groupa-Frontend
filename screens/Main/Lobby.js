@@ -1,7 +1,7 @@
 import { View, Image } from "react-native";
 import { styles } from "../../Style";
 import React from "react";
-import { BIGTEXT, P, StartButton, RShowNotice } from "../../components/AtomBundle";
+import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
@@ -29,11 +29,6 @@ const Lobby = () => {
 		if (noticeTimeout) {
 			clearTimeout(noticeTimeout);
 		}
-
-		/*- After a couple of seconds, close the notice -*/
-		noticeTimeout = setTimeout(() => {
-			setNoticeEnabled(false);
-		}, 4000);
 	}
 
 	/*- When the user wants to leave -*/
@@ -43,7 +38,7 @@ const Lobby = () => {
 
 	/*- Like the componentDidMount -*/
 	React.useEffect(() => {
-		let is_mounted = true; 
+		let is_mounted = true;
 
 		/*- Join a lobby -*/
 		(async () => {
@@ -113,7 +108,7 @@ const Lobby = () => {
 			</View>
 
 			<StartButton onPress={leave_room}>Cancel</StartButton>
-			<RShowNotice enabled={noticeEnabled}>{notice}</RShowNotice>
+			{/* <RShowNotice enabled={noticeEnabled}>{notice}</RShowNotice> */}
 		</View>
 	);
 }

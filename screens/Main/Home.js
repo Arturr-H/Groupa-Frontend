@@ -3,7 +3,7 @@ import { View, ScrollView, Image, Text, RefreshControl, TouchableHighlight } fro
 import { styles, stylevar } from "../../Style";
 import { TopNav } from "../../components/molecules/TopNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StartButton } from "../../components/AtomBundle";
+import { StartButton, Toast } from "../../components/AtomBundle";
 
 /*- This class takes the friends-suids as an input,
 	makes a request to get the friends data -*/
@@ -150,6 +150,8 @@ export default class Home extends React.PureComponent {
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Hej</StartButton>
+
+				<Toast text="shittin" />
 			</View>
 		);
 	}

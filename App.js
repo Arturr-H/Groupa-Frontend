@@ -13,6 +13,7 @@ import Register from "./screens/Account/Register";
 /*- Mains -*/
 import Home from "./screens/Main/Home";
 import Lobby from "./screens/Main/Lobby";
+import Chat from "./screens/Main/Chat";
 
 /*- Create the stack navigator -*/
 const Stack = createNativeStackNavigator();
@@ -29,8 +30,7 @@ export default function App() {
 		<React.Fragment>
 			<NavigationContainer>
 				<Stack.Navigator>
-					{/* <Stack.Screen name="Home" component={Home} options={{ headerShown: false, gestureEnabled: false }}/> */}
-
+					<Stack.Screen name="Home" component={Home} options={{ headerShown: false, gestureEnabled: false }}/>
 				
 					{/*- Account related -*/}
 					<Stack.Screen name="Register" component={Register} options={{ headerShown: true, headerTransparent: true, headerTitle: "", headerBackTitle: "" }}/>
@@ -40,8 +40,9 @@ export default function App() {
 					{/*- Mains -*/}
 					{/*- We set gestureEnabled to false, because the
 						 users shouldn't be able to swipe back to login -*/}
-					<Stack.Screen name="Home" component={Home} options={{ headerShown: false, gestureEnabled: false }}/>
+					{/* <Stack.Screen name="Home" component={Home} options={{ headerShown: false, gestureEnabled: false }}/> */}
 					<Stack.Screen name="Lobby" component={Lobby} options={{ headerShown: false, gestureEnabled: false }}/>
+					<Stack.Screen name="Chat" component={Chat} options={{ headerShown: false, gestureEnabled: false }}/>
 
 				</Stack.Navigator>
 			</NavigationContainer>

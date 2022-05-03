@@ -41,7 +41,10 @@ const Lobby = () => {
 		navigation.navigate("Home");
 	}
 
+	/*- Like the componentDidMount -*/
 	React.useEffect(() => {
+		let is_mounted = true; 
+
 		/*- Join a lobby -*/
 		(async () => {
 
@@ -58,7 +61,7 @@ const Lobby = () => {
 				const data = result.data;
 
 				/*- Update all variables -*/
-				setUsers(data.users);
+				if (is_mounted) setUsers(data.users);
 
 				/*- Make a websocket request to the game id -*/
 				try{
@@ -77,6 +80,8 @@ const Lobby = () => {
 				make_notice("Error joining lobby");
 			});
 		})();
+
+		return () => { is_mounted = false };
 	}, []);
 
 	/*- Listen for messages -*/
@@ -112,7 +117,5 @@ const Lobby = () => {
 		</View>
 	);
 }
-
-
 
 export default Lobby;

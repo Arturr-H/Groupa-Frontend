@@ -1,6 +1,6 @@
 import React from "react";
-import { View, ScrollView, Image, Text, RefreshControl } from "react-native";
-import { styles } from "../../Style";
+import { View, ScrollView, Image, Text, RefreshControl, TouchableHighlight } from "react-native";
+import { styles, stylevar } from "../../Style";
 import { TopNav } from "../../components/molecules/TopNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StartButton } from "../../components/AtomBundle";
@@ -53,6 +53,11 @@ class FriendGetter extends React.PureComponent {
 	render() {
 		return (
 			<React.Fragment>
+				<FriendRow key={"ja1wawdfohauw"} image={"shittin"} displayname={"Shitting man 123"} username={"artur"} />
+				<FriendRow key={"jaw4awdfohauw"} image={"shittin"} displayname={"Cool"} username={"some_guy"} />
+				<FriendRow key={"jawawd2foh2auw"} image={"shittin"} displayname={"Hejsan svejsan"} username={"coolman"} />
+				<FriendRow key={"jaw3awdfohauw"} image={"shittin"} displayname={"Din mamma"} username={"shitabta"} />
+				<FriendRow key={"jaw1aw2dfohauw"} image={"shittin"} displayname={"Öeuagbh"} username={"oakwfp"} />
 				{
 					this.state.friendsData &&
 					this.state.friendsData.map((friendData, key) => {
@@ -71,20 +76,22 @@ class FriendRow extends React.PureComponent {
 
     render() {
         return (
-            <View style={styles.friendRow}>
-				<View style={styles.friendRowInner}>
-					<Image source={{ uri: this.props.image }} style={styles.friendRowImage}></Image>
-					<View style={styles.statusBlob} />
-					<View style={styles.friendRowTextContainer}>
-						<Text style={styles.friendRowDisplayname}>{this.props.displayname}</Text>
-						<Text style={styles.friendRowUsername}>@{this.props.username}</Text>
+            <TouchableHighlight onPress={() => {}} underlayColor={stylevar.border.light} style={styles.friendRow}>
+				<React.Fragment>
+					<View style={styles.friendRowInner}>
+						<Image source={{ uri: this.props.image }} style={styles.friendRowImage}></Image>
+						<View style={styles.statusBlob} />
+						<View style={styles.friendRowTextContainer}>
+							<Text style={styles.friendRowDisplayname}>{this.props.displayname}</Text>
+							<Text style={styles.friendRowUsername}>@{this.props.username}</Text>
+						</View>
 					</View>
-				</View>
 
-				<View style={styles.friendRowInner}>
-					<Text>Heisja</Text>
-				</View>
-            </View>
+					<View style={styles.friendRowInner}>
+						<Image style={{ width:25, height:25, opacity:0.2 }} source={{ uri: "https://cdn-icons-png.flaticon.com/512/860/860828.png" }} />
+					</View>
+				</React.Fragment>
+            </TouchableHighlight>
         );
     }
 }

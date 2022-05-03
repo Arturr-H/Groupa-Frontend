@@ -3,10 +3,25 @@ import { StyleSheet, Dimensions } from "react-native";
 /*- Sometimes % doens't work -*/
 const { width, height } = Dimensions.get("window");
 
+/*- Some style-variables -*/
+const stylevar = {
+	border: {
+		thick: "#ccc",
+		light: "rgb(240, 240, 240)"
+	},
+	text: {
+		default: "#000",
+		light: "#999"
+	},
+	colors: {
+		main: "#fc6b68"
+	}
+}
+
 /*- Default styles -*/
 const Default = {
 	border: {
-		borderColor: "#ccc",
+		borderColor: stylevar.border.thick,
 		borderWidth: 1,
 	},
 	shadow: {
@@ -86,7 +101,7 @@ const styles = StyleSheet.create({
 		...Default.border,
 	},
 	submitInput: {
-		backgroundColor: "#fc6b68",
+		backgroundColor: stylevar.colors.main,
 
 		height: 50,
 		width: "100%",
@@ -119,7 +134,7 @@ const styles = StyleSheet.create({
 		width,
 		height: 120,
 		borderBottomWidth: 1,
-		borderBottomColor: "#ccc",
+		borderBottomColor: stylevar.border.thick,
 
 		paddingTop: 40,
 		paddingHorizontal: 15,
@@ -132,17 +147,17 @@ const styles = StyleSheet.create({
 	h1: {
 		fontSize: REM(2.5),
 		fontWeight: "bold",
-		color: "#000",
+		color: stylevar.text.default,
 	},
 	h2: {
 		fontSize: REM(2),
 		fontWeight: "bold",
-		color: "#000",
+		color: stylevar.text.default,
 	},
 	p: {
 		fontSize: REM(1),
 		fontWeight: "200",
-		color: "#a9a9a9",
+		color: stylevar.text.light,
 	},
 
 	accountBubble: {
@@ -168,7 +183,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		paddingVertical: 10,
 
-		borderBottomColor: "#eee",
+		borderBottomColor: stylevar.border.light,
 		borderBottomWidth: 1,
 	},
 	friendRowInner: {
@@ -193,11 +208,11 @@ const styles = StyleSheet.create({
 	friendRowDisplayname: {
 		fontSize: REM(1),
 		fontWeight: "bold",
-		color: "#000",
+		color: stylevar.text.default,
 	},
 	friendRowUsername: {
 		fontSize: REM(0.8),
-		color: "#999",
+		color: stylevar.text.light,
 	},
 
 	statusBlob: {
@@ -215,7 +230,7 @@ const styles = StyleSheet.create({
 	},
 
 	startButton: {
-		backgroundColor: "#fc6b68",
+		backgroundColor: stylevar.colors.main,
 
 		height: 50,
 		width: "80%",
@@ -293,7 +308,7 @@ const styles = StyleSheet.create({
 	message: {
 		fontSize: REM(2),
 		fontWeight: "bold",
-		color: "#000",
+		color: stylevar.text.default,
 	},
 
 	messageInputContainer: {
@@ -353,5 +368,6 @@ const styles = StyleSheet.create({
 
 export {
 	styles,
-	Default 
+	Default,
+	stylevar
 }

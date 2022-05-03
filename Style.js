@@ -139,6 +139,11 @@ const styles = StyleSheet.create({
 		fontWeight: "bold",
 		color: "#000",
 	},
+	p: {
+		fontSize: REM(1),
+		fontWeight: "200",
+		color: "#a9a9a9",
+	},
 
 	accountBubble: {
 		height: "70%",
@@ -226,11 +231,124 @@ const styles = StyleSheet.create({
 	},
 
 	bigtext: {
-		fontSize: REM(2.5),
+		fontSize: REM(4.5),
 		fontWeight: "900",
-		color: "#000",	
+		color: "rgb(70, 70, 70)",	
 		fontFamily: "PoppinsBold"
-	}
+	},
+
+	notice: {
+		width: "80%",
+		height: 60,
+		borderRadius: 10,
+
+		...Default.shadow,
+		position: "absolute",
+		bottom: 60,
+		zIndex: 3,
+
+		backgroundColor: "rgb(133, 168, 208)",
+		alignSelf: "center",
+		flexDirection: "row",
+
+		alignItems: "center",
+		paddingHorizontal: 15,
+		paddingVertical: 10,
+	},
+	noticeIcon: {
+		width: 30,
+		height: 30,
+
+		marginRight: 15,
+	},
+	noticeText: {
+		flexShrink: 1,
+		color: "#fff",
+		fontWeight: "bold",
+		fontSize: 18,
+	},
+
+
+	chatContainer: {
+		width,
+		height,
+
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	messageContainer: {
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "center",
+		alignItems: "center",
+
+		width: "100%",
+		flexGrow: 1,
+
+		paddingTop: 20,
+		backgroundColor: "blue"
+	},
+	message: {
+		fontSize: REM(2),
+		fontWeight: "bold",
+		color: "#000",
+	},
+
+	messageInputContainer: {
+		width: "100%",
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	messageInput: {
+		backgroundColor: "#fff",
+		
+		height: 55,
+		width: "90%",
+
+		padding: 15,
+		borderRadius: 40,
+		marginBottom: 30,
+
+		...Default.shadow,
+	},
+	messageSendButton: {
+		backgroundColor: "#8ea7e8",
+		
+		height: 45,
+		width: 45,
+
+		
+		borderRadius: 50,
+		bottom: 35,
+		position: "absolute",
+		right: "6.5%",
+	},
+
+	lobbyProfileContainer: {
+		width: "100%",
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		flexWrap: "wrap",
+
+		paddingHorizontal: 40,
+	},
+	lobbyProfileImage: {
+		width: 50,
+		height: 50,
+		borderRadius: 50,
+
+		marginHorizontal: 10,
+		marginVertical: 10,
+
+		...Default.border,
+	},
 });
 
 export {

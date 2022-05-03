@@ -26,28 +26,28 @@ class FriendGetter extends React.PureComponent {
 	/*- Fetch friends -*/
 	async getFriends() {
 
-		/*- Get the users suid so that the server knows which persons friends -*/
-		const suid = await AsyncStorage.getItem("suid");
+		try{
+			/*- Get the users suid so that the server knows which persons friends -*/
+			const suid = await AsyncStorage.getItem("suid");
 
-		/*- Get the friends data from the server -*/
-		const response = await fetch(
-			"https://artur.red/api/get-friends-data",
-			{
-				method: "GET",
-				headers: {
-					Accept: "application/json",
-					"Content-Type": "application/json",
-					suid,
-				},
-			}
-		);
-		
-		const responseJSON = await response.json();
-		const friendsData = responseJSON.data;
+			/*- Get the friends data from the server -*/
+			const response = await fetch(
+				"https://artur.red/api/get-friends-data",
+				{
+					method: "GET",
+					headers: {
+						Accept: "application/json",
+						"Content-Type": "application/json",
+						suid,
+					},
+				}
+			);
+			
+			const responseJSON = await response.json();
+			const friendsData = responseJSON.data;
 
-		console.log(friendsData);
-
-		this.setState({ friendsData });
+			this.setState({ friendsData });
+		}catch {};
 	}
 
 	render() {
@@ -56,7 +56,6 @@ class FriendGetter extends React.PureComponent {
 				{
 					this.state.friendsData &&
 					this.state.friendsData.map((friendData, key) => {
-						console.log(key);
 						return <FriendRow key={key} image={friendData.profile} displayname={friendData.displayname} username={friendData.username} />
 					})
 				}
@@ -107,24 +106,26 @@ export default class Home extends React.PureComponent {
 
 		/*- Get the users profile image and render it -*/
 		(async () => {
-			/*- Profile img -*/
-			const profile = await AsyncStorage.getItem("profile");
-			this.setState({
-				imageURL: profile
-			});
+			try{
+				/*- Profile img -*/
+				const profile = await AsyncStorage.getItem("profile");
+				this.setState({
+					imageURL: profile
+				});
 
-			/*- Get the users friends -*/
-			const suid = await AsyncStorage.getItem("suid");
-			const friends = await fetch("https://artur.red/api/profile-data", {
-				method: "GET",
-				headers: { suid },
-			});
+				/*- Get the users friends -*/
+				const suid = await AsyncStorage.getItem("suid");
+				const friends = await fetch("https://artur.red/api/profile-data", {
+					method: "GET",
+					headers: { suid },
+				});
 
-			/*- Render the friends -*/
-			const friendsJSON = await friends.json();
-			this.setState({
-				friends: friendsJSON.data.friends
-			});
+				/*- Render the friends -*/
+				const friendsJSON = await friends.json();
+				this.setState({
+					friends: friendsJSON.data.friends
+				});
+			}catch {};
 		})();
 	}
 

@@ -12,194 +12,6 @@ const MAX_USERS = 2;
 const MIN_USERS = 2;
 
 // TODO: Make a cache map for every SUID - to avoid unnecessary requests
-
-// const Laobby = () => {
-
-// 	/*- Hooks -*/
-// 	const [users, setUsers]                 = React.useState([]);
-// 	const [noticeEnabled, setNoticeEnabled] = React.useState(false);
-// 	const [notice, setNotice]               = React.useState("");
-// 	const [roomFound, setRoomFound]         = React.useState("");
-// 	const [isAdmin, setIsAdmin]             = React.useState(false);
-// 	let roomid = "";
-
-// 	/*- Navigation -*/
-// 	const navigation = useNavigation();
-
-// 	/*- Make a notice -*/
-// 	const make_notice = (notice) => {
-// 		setNoticeEnabled(true);
-// 		setNotice(notice);
-// 	}
-
-// 	/*- When the user wants to leave -*/
-// 	const leave_room = () => {
-// 		navigation.navigate("Home");
-// 	}
-// 	/*- Only leaders should be able to do this, so check in frontend & backend -*/
-// 	const start_room = async () => {
-// 		if (!isAdmin) return;
-// 		const suid = await AsyncStorage.getItem("suid");
-
-// 		/*- Send the start req to the backend -*/
-// 		client.send(JSON.stringify({
-// 			type: "start",
-// 			data: {
-// 				requester: suid,
-// 				roomid,
-// 			}
-// 		}));
-// 	}
-
-// 	/*- Like the componentDidMount -*/
-// 	React.useEffect(() => {
-// 		let is_mounted = true;
-
-// 		/*- Join a lobby -*/
-// 		(async () => {
-
-// 			/*- Get the users suid which is needed for joining lobbies -*/
-// 			const suid = await AsyncStorage.getItem("suid");
-			
-// 			/*- Join / create a room -*/
-// 			await fetch("https://wss.artur.red/api/join-room", {
-// 				method: "GET",
-// 				headers: { suid }
-// 			}).then(async data => await data.json()).then(result => {
-
-// 				/*- The result data -*/
-// 				const data = result.data;
-
-// 				/*- Update all variables -*/
-// 				if (is_mounted) {
-// 					setUsers(data.users);
-// 					setRoomFound(true);
-// 					setIsAdmin(result.data.host == suid);
-// 					roomid = data.roomid;
-// 				}
-
-// 				/*- Make a websocket request to the game id -*/
-// 				try{
-// 					client.send(JSON.stringify({
-// 						type: "join-room",
-// 						data: {
-// 							roomid: data.roomid,
-// 							suid,
-// 						}
-// 					}));
-// 				}catch(e) {
-// 					console.log(e);
-// 				};
-// 			}).catch(e => {
-// 				console.log(e),
-// 				make_notice("Error joining lobby");
-// 			});
-// 		})();
-
-// 		return () => { is_mounted = false };
-// 	}, []);
-
-// 	/*- Like componentWillUnmount -*/
-// 	React.useEffect(() => {
-// 		let is_mounted = true;
-
-// 		return async () => {
-// 			const suid = await AsyncStorage.getItem("suid");
-			
-// 			/*- Leave the room -*/
-// 			if (is_mounted) client.send(JSON.stringify({
-// 				type: "leave",
-// 				data: {
-// 					suid,
-// 					roomid,
-// 				}
-// 			}));
-// 			is_mounted = false;
-// 		}
-// 	}, []);
-
-// 	/*- Listen for messages -*/
-// 	client.onmessage = async (event) => {
-// 		let is_mounted = true;
-
-// 		const response = JSON.parse(event.data);
-// 		const response_type = response.type;
-
-// 		if (response_type === "join-room") {
-// 			/*- Update the userlist -*/
-// 			setUsers(response.data.user_list);
-			
-// 			/*- Notify all users -*/
-// 			make_notice(`User {${response.data.new_user}} joined!`);
-
-// 		}else if (response_type === "start") {
-// 			make_notice("Start");
-// 		}else if (response_type === "leave") {
-// 			const { user_list, new_host, leaver } = response.data;
-// 			const suid = await AsyncStorage.getItem("suid");
-
-// 			console.log("baen");
-
-// 			/*- Update the userlist -*/
-// 			if (is_mounted) setUsers(user_list);
-
-// 			console.log(1);
-
-// 			/*- Notify all users -*/
-// 			if (is_mounted) make_notice(`User {${leaver}} left!`);
-
-// 			console.log(2);
-
-// 			/*- If the user left was the host -*/
-// 			if (new_host == suid) {
-// 				if (is_mounted) setIsAdmin(true);
-// 				console.log(3);
-// 			}
-// 		}
-
-// 		return () => { is_mounted = false };
-// 	};
-
-// 	/*- If there are any errors, make somethin in the furure -*/
-// 	client.onerror = () => { make_notice("There was an error"); };
-
-// 	/*- Render -*/
-// 	return (
-// 		<View style={styles.container}>
-// 			{
-// 				roomFound ?
-// 				<>
-// 					{/*- Display the games current status -*/}
-// 					<P>{
-// 						users.length >= MAX_USERS
-// 						? "Waiting for leader to start..."
-// 						: "Waiting for people to join..."
-// 					}</P>
-// 					<BIGTEXT>{users && users.length}/{MAX_USERS}</BIGTEXT>
-
-// 					<View style={styles.lobbyProfileContainer}>
-// 						{users && users.map((user, index) => {
-// 							return <Image key={index} source={{ uri: `https://artur.red/api/profile-data/image/${user}`}} style={styles.lobbyProfileImage} />
-// 						})}
-// 					</View>
-
-// 					{/*- The admin will recieve an X button in the top left instead of
-// 						the cancel button because it's replaced with the start one -*/}
-// 					{ isAdmin
-// 						? <StartButton onPress={start_room} inactive={users.length < MIN_USERS}>Start</StartButton> 
-// 						: <StartButton onPress={leave_room}>Cancel</StartButton> 
-// 					}
-// 					{ noticeEnabled ? <Toast text={notice} /> : null }
-// 				</>
-// 				:
-// 				<>
-// 					<P>Finding room...</P><P />
-// 					<ActivityIndicator />
-// 				</>
-// 			}
-// 		</View>
-// 	);
-// }
 class Lobby extends React.PureComponent {
 
 	constructor(props) {
@@ -212,7 +24,8 @@ class Lobby extends React.PureComponent {
 			notice: "",
 			roomFound: "",
 			isAdmin: false,
-			roomid: ""
+			roomid: "",
+			suid: "",
 		}
 
 		/*- Binds -*/
@@ -226,6 +39,7 @@ class Lobby extends React.PureComponent {
 
 	/*- Navigation -*/
 	_navigation = this.props.navigation;
+	_is_mounted = false;
 
 	/*- Make a notice -*/
 	make_notice = (notice) => {
@@ -237,15 +51,29 @@ class Lobby extends React.PureComponent {
 
 	/*- When the user wants to leave -*/
 	leave_room = () => {
-		_navigation.navigate("Home");
+		try {
+			const { suid, roomid } = this.state;
+
+			/*- Leave the room -*/
+			this.client.send(JSON.stringify({
+				type: "leave",
+				data: {
+					suid,
+					roomid,
+				}
+			}));
+
+		}catch(e){ console.log(e) };
+		this._navigation.navigate("Home");
 	}
+
 	/*- Only leaders should be able to do this, so check in frontend & backend -*/
 	start_room = async () => {
 		if (!this.state.isAdmin) return;
-		const suid = await AsyncStorage.getItem("suid");
+		const suid = this.state.suid;
 
 		/*- Send the start req to the backend -*/
-		client.send(JSON.stringify({
+		this.client.send(JSON.stringify({
 			type: "start",
 			data: {
 				requester: suid,
@@ -256,13 +84,15 @@ class Lobby extends React.PureComponent {
 
 	/*- On mount -*/
 	componentDidMount = () => {
-		let is_mounted = true;
-
+		this._is_mounted = true;
+		
 		/*- Join a lobby -*/
 		(async () => {
+			this.setState({ suid: await AsyncStorage.getItem("suid") });
+			console.log(this.state.suid)
 
 			/*- Get the users suid which is needed for joining lobbies -*/
-			const suid = await AsyncStorage.getItem("suid");
+			const suid = this.state.suid;
 			
 			/*- Join / create a room -*/
 			await fetch("https://wss.artur.red/api/join-room", {
@@ -274,7 +104,7 @@ class Lobby extends React.PureComponent {
 				const data = result.data;
 
 				/*- Update all variables -*/
-				if (is_mounted) this.setState({
+				if (this._is_mounted) this.setState({
 					users: data.users,
 					roomFound: true,
 					isAdmin: result.data.host == suid,
@@ -301,8 +131,6 @@ class Lobby extends React.PureComponent {
 
 		/*- Listen for messages -*/
 		this.client.onmessage = async (event) => {
-			let is_mounted = true;
-
 			const response = JSON.parse(event.data);
 			const response_type = response.type;
 
@@ -317,53 +145,28 @@ class Lobby extends React.PureComponent {
 				this.make_notice("Start");
 			}else if (response_type === "leave") {
 				const { user_list, new_host, leaver } = response.data;
-				const suid = await AsyncStorage.getItem("suid");
-
-				console.log("baen");
+				const suid = this.state.suid;
 
 				/*- Update the userlist -*/
-				if (is_mounted) this.setState({ users: user_list });
-
-				console.log(1);
+				if (this._is_mounted) this.setState({ users: user_list });
 
 				/*- Notify all users -*/
-				if (is_mounted) this.make_notice(`User {${leaver}} left!`);
-
-				console.log(2);
+				if (this._is_mounted) this.make_notice(`User {${leaver}} left!`);
 
 				/*- If the user left was the host -*/
 				if (new_host == suid) {
-					if (is_mounted) this.setState({ isAdmin: true });
-					console.log(3);
+					if (this._is_mounted) this.setState({ isAdmin: true });
 				}
 			}
-
-			return () => { is_mounted = false };
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/
 		this.client.onerror = () => { this.make_notice("There was an error"); };
-
-		return () => { is_mounted = false };
 	};
 
 	/*- Like componentWillUnmount -*/
 	componentWillUnmount = () => {
-		// let is_mounted = true;
-
-		// return async () => {
-		// 	const suid = await AsyncStorage.getItem("suid");
-			
-		// 	/*- Leave the room -*/
-		// 	if (is_mounted) client.send(JSON.stringify({
-		// 		type: "leave",
-		// 		data: {
-		// 			suid,
-		// 			roomid,
-		// 		}
-		// 	}));
-		// 	is_mounted = false;
-		// }
+		this._is_mounted = false;
 	};
 
 	/*- Render -*/

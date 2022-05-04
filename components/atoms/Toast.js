@@ -1,12 +1,11 @@
 import React from "react";
-import { TouchableOpacity, Image, Text, Animated, Easing, Dimensions } from "react-native";
+import { TouchableOpacity, Text, Animated, Easing, Dimensions } from "react-native";
 import { styles } from "../../Style";
 import { Haptic } from "../../func/Haptic";
-
-const { width, height } = Dimensions.get("window");
+let toast_timeout = null;
 
 /*- A toast which appears from the bottom of the screen -*/
-export const Toast = ({ text, duration = 3000, onClose }) => {
+export const Toast = ({ text, duration = 3000 }) => {
     /*- The animation value -*/
     const [animation] = React.useState(new Animated.Value(0));
 
@@ -22,8 +21,9 @@ export const Toast = ({ text, duration = 3000, onClose }) => {
 
     /*- Like the componentDidMount -*/
     React.useEffect(() => {
+        Haptic("light");
         animate(1);
-        setTimeout(() => {
+        toast_timeout = setTimeout(() => {
             animate(0);
         }, duration);
     }, []);
@@ -32,7 +32,7 @@ export const Toast = ({ text, duration = 3000, onClose }) => {
     return (
         <Animated.View
             style={[
-                styles.toast,
+                styles.toastAnimator,
                 {
                     transform: [
                         {
@@ -42,10 +42,15 @@ export const Toast = ({ text, duration = 3000, onClose }) => {
                             }),
                         },
                     ],
-                },
+                }
             ]}
         >
-            <Text style={styles.toastText}>{text}</Text>
+            <TouchableOpacity style={styles.toast} activeOpacity={0.8} onPress={() => {
+                if (toast_timeout) clearTimeout(toast_timeout);
+                animate(0);
+            }}>
+                <Text style={styles.toastText}>{text}</Text>
+            </TouchableOpacity>
         </Animated.View>
     );
 }

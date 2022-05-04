@@ -52,8 +52,7 @@ class Chat extends React.PureComponent {
 
 		/*- Listen for messages -*/
 		ws.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			console.log(data);
+
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/

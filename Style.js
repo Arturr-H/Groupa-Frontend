@@ -15,6 +15,7 @@ const stylevar = {
 	},
 	colors: {
 		main: "#fc6b68",
+		main_inactive: "#a1a1a1",
 		secondary: "#8798dc",
 	}
 }
@@ -231,8 +232,6 @@ const styles = StyleSheet.create({
 	},
 
 	startButton: {
-		backgroundColor: stylevar.colors.main,
-
 		height: 50,
 		width: "80%",
 
@@ -245,6 +244,8 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 			alignItems: "center",
 	},
+	inactive: { backgroundColor: stylevar.colors.main_inactive },
+	active: { backgroundColor: stylevar.colors.main, },
 
 	bigtext: {
 		fontSize: REM(4.5),
@@ -253,15 +254,27 @@ const styles = StyleSheet.create({
 		fontFamily: "PoppinsBold"
 	},
 
-	toast: {
-		backgroundColor: stylevar.colors.secondary,
-		borderRadius: 10,
-		padding: 10,
+	toastAnimator: {
 		bottom: 0,
 
 		width: "80%",
 		height: 60,
 		position: "absolute",
+		zIndex: 10,
+
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+	},
+	toast: {
+		backgroundColor: stylevar.colors.secondary,
+		borderRadius: 10,
+		padding: 10,
+		paddingHorizontal: 20,
+
+		width: "100%",
+		height: 60,
 		zIndex: 10,
 
 		display: "flex",
@@ -277,7 +290,7 @@ const styles = StyleSheet.create({
 
 		marginRight: 15,
 	},
-	noticeText: {
+	toastText: {
 		flexShrink: 1,
 		color: "#fff",
 		fontWeight: "bold",

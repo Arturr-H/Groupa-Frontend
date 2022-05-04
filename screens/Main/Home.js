@@ -150,8 +150,6 @@ export default class Home extends React.PureComponent {
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Hej</StartButton>
-
-				<Toast text="shittin" />
 			</View>
 		);
 	}

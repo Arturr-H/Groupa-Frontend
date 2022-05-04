@@ -28,18 +28,18 @@ class StartButton extends React.PureComponent {
     constructor(props) {
         super(props);
     }
-       
+
     /*- Render the StartButton -*/
     render() {
         return (
             <TouchableOpacity
-                style                = {styles.startButton}
+                style                = {[styles.startButton, this.props.inactive ? styles.inactive : styles.active]}
                 onPress              = {() => {
-                    this.props.onPress();
+                    if (!this.props.inactive) this.props.onPress();
                     Haptic("medium");
                 }}
-                activeOpacity	     = {0.8}
-                >
+                activeOpacity	     = { this.props.inactive ? 1 : 0.8 }
+            >
                 <Text style={styles.submitInputText}>{this.props.children}</Text>
             </TouchableOpacity>
         );

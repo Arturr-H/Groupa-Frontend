@@ -4,7 +4,7 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, TextInput, KeyboardAvoidingView, Keyboard, Image, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { styles } from "../../Style";
+import { register as styles, input } from "../../Style";
 import { Button } from "../../components/atoms/Button";
 
 /*- Backend / Account api URL -*/
@@ -107,7 +107,7 @@ export default class Login extends React.PureComponent {
 				<View style={styles.bottomView}>
 					{/*- Email input -*/}
 					<TextInput
-						style                = {styles.input}
+						style                = {input.input}
 						placeholder          = {"Email"}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"email"}
@@ -124,7 +124,7 @@ export default class Login extends React.PureComponent {
 
 					{/*- Password input -*/}
 					<TextInput
-						style                = {styles.input}
+						style                = {input.input}
 						placeholder          = {"Password"}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"password"}

@@ -1,10 +1,9 @@
 import { View, Image, ActivityIndicator } from "react-native";
-import { styles } from "../../Style";
+import { def as styles, lobby } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
 
 /*- The websocket client -*/
 // const client = new W3CWebSocket("ws://wss.artur.red/");

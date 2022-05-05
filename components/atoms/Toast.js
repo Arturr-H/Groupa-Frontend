@@ -1,6 +1,6 @@
 import React from "react";
-import { TouchableOpacity, Text, Animated, Easing, Dimensions } from "react-native";
-import { styles } from "../../Style";
+import { TouchableOpacity, Text, Animated, Easing } from "react-native";
+import { toast as styles } from "../../Style";
 import { Haptic } from "../../func/Haptic";
 let toast_timeout = null;
 

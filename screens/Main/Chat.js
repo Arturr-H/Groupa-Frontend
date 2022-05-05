@@ -1,5 +1,5 @@
 import { ScrollView, View, TextInput, KeyboardAvoidingView } from "react-native";
-import { styles } from "../../Style";
+import { chat as styles } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, RShowNotice } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -17,7 +17,7 @@ class Chat extends React.PureComponent {
 			noticeEnabled: false,
 			notice: "",
 		};
-		
+
 		/*- Binding functions -*/
 		this.makeNotice = this.makeNotice.bind(this);
 	}
@@ -67,7 +67,7 @@ class Chat extends React.PureComponent {
 				<View style={styles.messageInputContainer}>
 					<TextInput
 						style={styles.messageInput}
-						placeholder="Send a message..."	
+						placeholder="Send a message..."
 					/>
 					<View style={styles.messageSendButton} />
 				</View>

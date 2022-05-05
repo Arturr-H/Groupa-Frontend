@@ -1,4 +1,4 @@
-import { styles } from "../../Style";
+import { input as styles } from "../../Style";
 import { TouchableOpacity, Text } from "react-native";
 import React from "react";
 import { Haptic } from "../../func/Haptic";

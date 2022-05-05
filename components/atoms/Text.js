@@ -1,4 +1,4 @@
-import { styles } from "../../Style";
+import { text as styles } from "../../Style";
 import { Text } from "react-native";
 import React from "react";
 

@@ -1,4 +1,4 @@
-import { styles } from "../../Style";
+import { def as styles } from "../../Style";
 import { View } from "react-native";
 import React from "react";
 import { H1, AccountBubble } from "../AtomBundle";

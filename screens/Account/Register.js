@@ -3,7 +3,7 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, KeyboardAvoidingView, Image } from "react-native";
-import { styles } from "../../Style";
+import { register as styles } from "../../Style";
 import { Button } from "../../components/atoms/Button";
 
 export default class Register extends React.PureComponent {

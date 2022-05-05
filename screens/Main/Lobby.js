@@ -11,6 +11,9 @@ import { useNavigation } from "@react-navigation/native";
 const MAX_USERS = 2;
 const MIN_USERS = 2;
 
+/*- How many times the client should try to reconnect if failed -*/
+const MAX_POLLING = 5;
+
 // TODO: Make a cache map for every SUID - to avoid unnecessary requests
 class Lobby extends React.PureComponent {
 
@@ -23,9 +26,12 @@ class Lobby extends React.PureComponent {
 			noticeEnabled: false,
 			notice: "",
 			roomFound: "",
-			isAdmin: false,
+			isHost: false,
 			roomid: "",
 			suid: "",
+
+			connectStaus: "Finding room...",
+			connectStausCode: 400,
 		}
 
 		/*- Binds -*/
@@ -51,6 +57,8 @@ class Lobby extends React.PureComponent {
 
 	/*- When the user wants to leave -*/
 	leave_room = () => {
+		this._is_mounted = false;
+
 		try {
 			const { suid, roomid } = this.state;
 
@@ -69,7 +77,7 @@ class Lobby extends React.PureComponent {
 
 	/*- Only leaders should be able to do this, so check in frontend & backend -*/
 	start_room = async () => {
-		if (!this.state.isAdmin) return;
+		if (!this.state.isHost) return;
 		const suid = this.state.suid;
 
 		/*- Send the start req to the backend -*/
@@ -89,44 +97,67 @@ class Lobby extends React.PureComponent {
 		/*- Join a lobby -*/
 		(async () => {
 			this.setState({ suid: await AsyncStorage.getItem("suid") });
-			console.log(this.state.suid)
 
 			/*- Get the users suid which is needed for joining lobbies -*/
 			const suid = this.state.suid;
 			
-			/*- Join / create a room -*/
-			await fetch("https://wss.artur.red/api/join-room", {
-				method: "GET",
-				headers: { suid }
-			}).then(async data => await data.json()).then(result => {
+			/*- Join / create a room and retry a set number of times -*/
+			const request_backend = async (n) => {
 
-				/*- The result data -*/
-				const data = result.data;
+				if (!this._is_mounted) return;
 
-				/*- Update all variables -*/
-				if (this._is_mounted) this.setState({
-					users: data.users,
-					roomFound: true,
-					isAdmin: result.data.host == suid,
-					roomid: data.roomid,
+				/*- Try find a room -*/
+				await fetch("https://wss.artur.red/api/join-room", {
+					method: "GET",
+					headers: { suid }
+				}).then(async data => await data.json()).then(result => {
+
+					/*- The result data -*/
+					const data = result.data;
+
+					/*- Update all variables -*/
+					if (this._is_mounted) this.setState({
+						users: data.users,
+						roomFound: true,
+						isHost: result.data.host === suid,
+						roomid: data.roomid,
+					});
+
+					/*- Make a websocket request to the game id -*/
+					try{
+						this.client.send(JSON.stringify({
+							type: "join-room",
+							data: {
+								roomid: data.roomid,
+								suid,
+							}
+						}));
+					}catch(e) {
+						console.log(e);
+					};
+				}).catch(() => {
+
+					/*- We want to try to connect a set number of times -*/
+					if (n > 0) {
+						this.setState({
+							connectStaus: `Failed to connect to servers, retrying (${MAX_POLLING-n+1}/${MAX_POLLING})`,
+							connectStausCode: 403
+						});
+
+						/*- Try again in x millis -*/
+						setTimeout(() => {
+							if (!this._is_mounted) return;
+							else request_backend(n-1);
+						}, 500);
+					}else{
+						this.setState({
+							connectStaus: "Failed to connect to servers.",
+							connectStausCode: 404,
+						});
+					}
 				});
-
-				/*- Make a websocket request to the game id -*/
-				try{
-					this.client.send(JSON.stringify({
-						type: "join-room",
-						data: {
-							roomid: data.roomid,
-							suid,
-						}
-					}));
-				}catch(e) {
-					console.log(e);
-				};
-			}).catch(e => {
-				console.log(e),
-				this.make_notice("Error joining lobby");
-			});
+			}
+			request_backend(MAX_POLLING);
 		})();
 
 		/*- Listen for messages -*/
@@ -136,13 +167,13 @@ class Lobby extends React.PureComponent {
 
 			if (response_type === "join-room") {
 				/*- Update the userlist -*/
-				this.setState({ users: response.data.user_list });
+				if(this._is_mounted) this.setState({ users: response.data.user_list });
 				
 				/*- Notify all users -*/
-				this.make_notice(`User {${response.data.new_user}} joined!`);
+				if(this._is_mounted) this.make_notice(`User {${response.data.new_user}} joined!`);
 
 			}else if (response_type === "start") {
-				this.make_notice("Start");
+				this._navigation.navigate("Chat");
 			}else if (response_type === "leave") {
 				const { user_list, new_host, leaver } = response.data;
 				const suid = this.state.suid;
@@ -155,7 +186,7 @@ class Lobby extends React.PureComponent {
 
 				/*- If the user left was the host -*/
 				if (new_host == suid) {
-					if (this._is_mounted) this.setState({ isAdmin: true });
+					if (this._is_mounted) this.setState({ isHost: true });
 				}
 			}
 		};
@@ -192,7 +223,7 @@ class Lobby extends React.PureComponent {
 
 						{/*- The admin will recieve an X button in the top left instead of
 							the cancel button because it's replaced with the start one -*/}
-						{ this.state.isAdmin
+						{ this.state.isHost
 							? <StartButton onPress={this.start_room} inactive={this.state.users.length < MIN_USERS}>Start</StartButton> 
 							: <StartButton onPress={this.leave_room}>Cancel</StartButton> 
 						}
@@ -200,8 +231,12 @@ class Lobby extends React.PureComponent {
 					</>
 					:
 					<>
-						<P>Finding room...</P><P />
-						<ActivityIndicator />
+						{/*- Display the current connection status -*/}
+						<P>{this.state.connectStaus}</P><P />
+
+						{/*- If the spinner should be active or not -*/}
+						{this.state.connectStausCode != 404 ? <ActivityIndicator /> : null}
+						<StartButton onPress={this.leave_room}>Cancel</StartButton> 
 					</>
 				}
 			</View>

@@ -4,6 +4,7 @@ import { home as styles, def, stylevar } from "../../Style";
 import { TopNav } from "../../components/molecules/TopNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StartButton } from "../../components/AtomBundle";
+import { ServerHandler } from "../../func/ServerHandler";
 
 /*- This class takes the friends-suids as an input,
 	makes a request to get the friends data -*/
@@ -17,6 +18,11 @@ class FriendGetter extends React.PureComponent {
 
 		this.getFriends = this.getFriends.bind(this);
 	}
+
+	/*- Backend server URL handling -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
 
 	/*- Initialization -*/
 	componentDidMount() {
@@ -32,7 +38,7 @@ class FriendGetter extends React.PureComponent {
 
 			/*- Get the friends data from the server -*/
 			const response = await fetch(
-				"https://artur.red/api/get-friends-data",
+				`${this._server_cdn}/api/get-friends-data`,
 				{
 					method: "GET",
 					headers: {
@@ -73,6 +79,11 @@ class FriendRow extends React.PureComponent {
 	constructor(props) {
         super(props);
     }
+
+	/*- Backend server URL handling -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
 
     render() {
         return (
@@ -122,7 +133,7 @@ export default class Home extends React.PureComponent {
 
 				/*- Get the users friends -*/
 				const suid = await AsyncStorage.getItem("suid");
-				const friends = await fetch("https://artur.red/api/profile-data", {
+				const friends = await fetch(`${this._server_cdn}/api/profile-data`, {
 					method: "GET",
 					headers: { suid },
 				});

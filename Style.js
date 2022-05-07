@@ -11,12 +11,16 @@ const stylevar = {
 	},
 	text: {
 		default: "#000",
-		light: "#999"
+		light: "#999",
+		white: "#fff",
 	},
 	colors: {
 		main: "#fc6b68",
 		main_inactive: "#a1a1a1",
 		secondary: "#8798dc",
+
+		fg: "#fff",
+		fg_second: "rgb(245, 245, 245)"
 	}
 }
 /*- Default styles -*/
@@ -76,7 +80,7 @@ const defaults = StyleSheet.create({
 });
 
 /*- All other styles go here -*/
-const styles = {
+const styles = { 
 	register: StyleSheet.create({
 		...defaults,
 
@@ -168,6 +172,16 @@ const styles = {
 
 		inactive: { backgroundColor: stylevar.colors.main_inactive },
 		active:   { backgroundColor: stylevar.colors.main, },
+
+		backButton: {
+			height: 35,
+			width: 35,
+
+			position: "absolute",
+			top: 60,
+			left: 20,
+			opacity: 0.5,
+		}
 	}),
 
 	text: StyleSheet.create({
@@ -235,6 +249,7 @@ const styles = {
 
 	chat: StyleSheet.create({
 		chatContainer: {
+			backgroundColor: stylevar.colors.fg,
 			width,
 			height,
 
@@ -243,55 +258,158 @@ const styles = {
 			justifyContent: "space-between",
 			alignItems: "center",
 		},
-		messageContainer: {
-			display: "flex",
-			flexDirection: "column",
-			justifyContent: "center",
-			alignItems: "center",
-
-			width: "100%",
-			flexGrow: 1,
-
-			paddingTop: 20,
-			backgroundColor: "blue"
-		},
-		message: {
-			fontSize: REM(2),
-			fontWeight: "bold",
-			color: stylevar.text.default,
-		},
 
 		messageInputContainer: {
 			width: "100%",
 			display: "flex",
 			flexDirection: "row",
+
 			justifyContent: "space-between",
 			alignItems: "center",
 			justifyContent: "center",
 		},
 		messageInput: {
-			backgroundColor: "#fff",
+			backgroundColor: stylevar.colors.fg_second,
 
 			height: 55,
 			width: "90%",
 
 			padding: 15,
+			paddingHorizontal: 20,
 			borderRadius: 40,
 			marginBottom: 30,
 
-			...Default.shadow,
+			paddingRight: 60,
+			marginTop: 20,
+
+			...Default.border,
 		},
 		messageSendButton: {
-			backgroundColor: "#8ea7e8",
+			backgroundColor: stylevar.colors.fg,
 
 			height: 45,
 			width: 45,
-
 
 			borderRadius: 50,
 			bottom: 35,
 			position: "absolute",
 			right: "6.5%",
+
+
+			...Default.border,
+		},
+
+		messageContainer: {
+			display: "flex",
+			flexDirection: "column",
+			justifyContent: "flex-end",
+			alignItems: "flex-start",
+			position: "relative",
+
+			width,
+			flexGrow: 1,
+
+			paddingTop: 20,
+			paddingHorizontal: 20,
+			zIndex: 11,
+		},
+		chatMessage: {
+			backgroundColor: stylevar.colors.fg_second,
+
+			padding: 10,
+			paddingHorizontal: 15,
+
+			position: "relative",
+			display: "flex",
+			flexDirection: "row",
+
+			borderRadius: 20,
+			// minWidth: 100,
+			maxWidth: width * 0.8,
+		},
+		chatMessageOwned: {
+			backgroundColor: stylevar.colors.main,
+
+			padding: 10,
+			paddingHorizontal: 15,
+
+			marginLeft: "auto",
+			position: "relative",
+			display: "flex",
+			flexDirection: "row",
+
+			display: "flex",
+			flexDirection: "row",
+
+			borderRadius: 20,
+			// minWidth: 100,
+			maxWidth: width * 0.8,
+		},
+		chatMessageTextArea: {
+			display: "flex",
+			flexDirection: "column",
+		},
+		chatMessageText: {
+			fontWeight: "400",
+
+			flexShrink: 1,
+			flexWrap: "wrap",
+		},
+		chatMessageUserText: {
+			color: stylevar.text.light,
+			fontWeight: "300",
+			fontSize: 13,
+
+			marginBottom: 5,
+			flexShrink: 1,
+		},
+		chatMessageAvatar: {
+			width: 40,
+			height: 40,
+			borderRadius: 25,
+			marginRight: 10,
+
+			backgroundColor: "blue",
+		},
+
+		/*- The little snippet that often lies in message corners yk -*/
+		messageSnippetOwned: {
+			backgroundColor: stylevar.colors.main,
+
+			position: "absolute",
+			bottom: 0,
+			right: 0,
+
+			padding: 10,
+			zIndex: -1
+		},
+		messageSnippet: {
+			backgroundColor: stylevar.colors.fg_second,
+			
+			position: "absolute",
+			bottom: 0,
+			left: 0,
+
+			padding: 10,
+			zIndex: -1,
+		},
+
+		chatMessageTimestampOwned: {
+			color: stylevar.text.light,
+			fontWeight: "300",
+			fontSize: 12,
+			marginLeft: "auto",
+
+			marginTop: 2.5,
+			marginBottom: 10,
+		},
+		chatMessageTimestamp: {
+			color: stylevar.text.light,
+			fontWeight: "300",
+			fontSize: 12,
+
+			marginTop: 2.5,
+			marginBottom: 10,
 		},
 	}),
 

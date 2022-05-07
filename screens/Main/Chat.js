@@ -1,11 +1,73 @@
-import { ScrollView, View, TextInput, KeyboardAvoidingView } from "react-native";
-import { chat as styles } from "../../Style";
+import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, Text, Image } from "react-native";
+import { chat as styles, stylevar } from "../../Style";
 import React from "react";
-import { BIGTEXT, P, StartButton, RShowNotice } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
+import { BackButton } from "../../components/AtomBundle";
+import { ServerHandler } from "../../func/ServerHandler";
 
-const ws = new W3CWebSocket("ws://wss.artur.red/");
+/*- Map every message to this -*/
+class ChatMessage extends React.PureComponent {
+	constructor(props) {
+		super(props);
 
+		/*- Changeable -*/
+		this.user_owned = this.props.user_owned;
+	}
+
+	/*- Render -*/
+	render() {
+		return (
+			<React.Fragment>
+				<View style={
+					/*- We want dependent styles (if message is owned or not) -*/
+					this.user_owned
+					? styles.chatMessageOwned
+					: styles.chatMessage
+				}>
+					{/*- If the user "owns" the message we
+						don't want to display their avatar -*/
+						this.user_owned
+							? null
+							: <Image source={{ uri: "https://s" }} style={styles.chatMessageAvatar} />
+					}
+
+					{/*- Text area -*/}
+					<View style={styles.chatMessageTextArea}>
+						{
+							/*- Only show the username if message is not owned -*/
+							this.user_owned
+								? null
+								: <Text style={styles.chatMessageUserText}>@useer</Text>
+						}
+						<Text style={[
+							styles.chatMessageText,
+							{
+								color: this.user_owned
+									? stylevar.text.white
+									: stylevar.text.default,
+							}
+						]}>
+							{this.props.text}
+						</Text>
+					</View>
+
+					<View style={
+						this.user_owned
+							? styles.messageSnippetOwned
+							: styles.messageSnippet
+					}/>
+				</View>
+				<Text style={
+					this.user_owned
+						? styles.chatMessageTimestampOwned
+						: styles.chatMessageTimestamp
+				}>{this.props.time}</Text>
+			</React.Fragment>
+		);
+	}
+};
+
+/*- Main scene -*/
 class Chat extends React.PureComponent {
 
 	/*- Construct the component -*/
@@ -16,11 +78,34 @@ class Chat extends React.PureComponent {
 			users: [],
 			noticeEnabled: false,
 			notice: "",
+			messages: [],
+			message: "",
 		};
+
+		/*- Variables -*/
+		this.roomid = this.props.route.params.roomid;
+		this.suid = this.props.route.params.suid;
 
 		/*- Binding functions -*/
 		this.makeNotice = this.makeNotice.bind(this);
-	}
+		this.sendMessage = this.sendMessage.bind(this);
+		this.addMessage = this.addMessage.bind(this);
+		this.leaveRoom = this.leaveRoom.bind(this);
+
+		/*- Refs -*/
+		this.scrollView = React.createRef();
+	};
+
+	/*- Server handler variables -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
+
+	/*- The websocket client -*/
+	client = new W3CWebSocket(this._server_url);
+
+	/*- Mounting-check -*/
+	_is_mounted = false;
 
 	/*- Make a notice -*/
 	makeNotice(notice) {
@@ -28,55 +113,155 @@ class Chat extends React.PureComponent {
 			noticeEnabled: true,
 			notice,
 		});
+	};
 
-		/*- Clear the timeout -*/
-		if (noticeTimeout) {
-			clearTimeout(noticeTimeout);
-		}
+	/*- Send message -*/
+	sendMessage(text) {
 
-		/*- After a couple of seconds, close the notice -*/
-		noticeTimeout = setTimeout(() => {
+		/*- Check if message is invalid -*/
+		if (text.length === 0) { return; };
+
+		this.client.send(JSON.stringify({
+			type: "message",
+			data: {
+				text,
+				sender: this.suid,
+				roomid: this.roomid,
+				time: get_hh_mm(),
+			},
+		}));
+	};
+
+	/*- Add message function -*/
+	addMessage(data) {
+
+		/*- Get the data -*/
+		const { text, sender, time } = data;
+
+		if (this._is_mounted) {
 			this.setState({
-				noticeEnabled: false,
+				messages: [
+					...this.state.messages,
+					{
+						text,
+						owned: sender === this.suid,
+						owner: sender,
+						time,
+					},
+				],
 			});
-		}, 4000);
-	}
 
+			/*- Scroll to the bottom -*/
+			this.scrollView.scrollToEnd();
+		}
+	};
+
+	/*- Leave room -*/
+	leaveRoom() {
+		this.client.send(JSON.stringify({
+			type: "leave",
+			data: {
+				roomid: this.roomid,
+				suid: this.suid,
+			},
+		}));
+
+		/*- Close the ws connection and go back -*/
+		this.client.close();
+		this.props.navigation.navigate("Home");
+	}
+	
 	/*- Before render -*/
 	componentDidMount() {
+		this._is_mounted = true;
 
 		/*- When the connection is established -*/
-		ws.onopen = () => {
-
+		this.client.onopen = () => {
+			/*- Send the join-room -*/
+			this.client.send(JSON.stringify({
+				type: "join-room",
+				data: {
+					roomid: this.roomid,
+					suid: this.suid,
+				},
+			}));
 		};
 
 		/*- Listen for messages -*/
-		ws.onmessage = (event) => {
+		this.client.onmessage = (event) => {
+			const response = JSON.parse(event.data);
+			const response_type = response.type;
 
+			/*- Check the message types -*/
+			if (response_type === "message") {
+				this.addMessage(response.data);
+			}
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/
-		ws.onerror = (error) => { this.makeNotice("There was an error"); };
+		this.client.onerror = () => { this.makeNotice("There was an error"); };
+	}
+
+	/*- Before unmount -*/
+	componentWillUnmount() {
+		this._is_mounted = false;
+		this.client.close();
 	}
 
 	render() {
 		return (
 			<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
 
-				<ScrollView contentContainerStyle={styles.messageContainer}></ScrollView>
+				{/*- All messages here -*/}
+				<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
+					{this.state.messages.map((obj, index) => (
+						<ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} />
+					))}
+				</ScrollView>
+
 				<View style={styles.messageInputContainer}>
 					<TextInput
 						style={styles.messageInput}
 						placeholder="Send a message..."
+						onChangeText={(text) => {
+							this.setState({
+								message: text,
+							});
+						}}
+						value={this.state.message}
+
+						/*- Send message when enter is pressed -*/
+						onSubmitEditing={() => {
+							this.sendMessage(this.state.message);
+							this.setState({ message: "" });
+						}}
 					/>
-					<View style={styles.messageSendButton} />
+					<TouchableHighlight onPress={() => {}} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
 				</View>
-				{/* <RShowNotice enabled={this.state.noticeEnabled}>{this.state.notice}</RShowNotice> */}
+
+				<BackButton onPress={this.leaveRoom} />
 			</KeyboardAvoidingView>
 		);
 	}
-}
+};
 
+/*- Time functions -*/
+const get_hh_mm = () => {
+	const date = new Date();
+	const hh = date.getHours();
+	const mm = date.getMinutes();
 
+	let end = "";
+	if (hh < 10) {
+		end += "0";
+	}
+	end += hh;
+	end += ":";
+	if (mm < 10) {
+		end += "0";
+	}
+	end += mm;
+	return end;
+};
 
 export default Chat;

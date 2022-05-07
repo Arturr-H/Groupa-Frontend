@@ -1,14 +1,14 @@
 import { View, Image, ActivityIndicator } from "react-native";
-import { def as styles, lobby } from "../../Style";
+import { def as styles } from "../../Style";
 import React from "react";
-import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
+import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ServerHandler } from "../../func/ServerHandler";
 
 /*- The websocket client -*/
-// const client = new W3CWebSocket("ws://wss.artur.red/");
 const MAX_USERS = 2;
-const MIN_USERS = 2;
+const MIN_USERS = 1;
 
 /*- How many times the client should try to reconnect if failed -*/
 const MAX_POLLING = 5;
@@ -39,8 +39,13 @@ class Lobby extends React.PureComponent {
 		this.start_room = this.start_room.bind(this);
 	}
 
+	/*- Backend server URL handling -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
+	
 	/*- The websocket client -*/
-	client = new W3CWebSocket("ws://wss.artur.red/");
+	client = new W3CWebSocket(this._server_url);
 
 	/*- Navigation -*/
 	_navigation = this.props.navigation;
@@ -99,6 +104,30 @@ class Lobby extends React.PureComponent {
 
 			/*- Get the users suid which is needed for joining lobbies -*/
 			const suid = this.state.suid;
+
+			const retry_connect = (n) => {
+
+				console.log("Retrying connection..." + n);
+
+				/*- We want to try to connect a set number of times -*/
+				if (n > 0) {
+					this.setState({
+						connectStaus: `Failed to connect to servers, retrying (${MAX_POLLING-n+1}/${MAX_POLLING})`,
+						connectStausCode: 403
+					});
+
+					/*- Try again in x millis -*/
+					setTimeout(() => {
+						if (!this._is_mounted) return;
+						else request_backend(n-1);
+					}, 500);
+				}else{
+					this.setState({
+						connectStaus: "Failed to connect to servers.",
+						connectStausCode: 404,
+					});
+				}
+			}
 			
 			/*- Join / create a room and retry a set number of times -*/
 			const request_backend = async (n) => {
@@ -106,7 +135,7 @@ class Lobby extends React.PureComponent {
 				if (!this._is_mounted) return;
 
 				/*- Try find a room -*/
-				await fetch("https://wss.artur.red/api/join-room", {
+				await fetch(`${this._server_url}/api/join-room`, {
 					method: "GET",
 					headers: { suid }
 				}).then(async data => await data.json()).then(result => {
@@ -124,38 +153,50 @@ class Lobby extends React.PureComponent {
 
 					/*- Make a websocket request to the game id -*/
 					try{
-						this.client.send(JSON.stringify({
-							type: "join-room",
-							data: {
-								roomid: data.roomid,
-								suid,
-							}
-						}));
-					}catch(e) {
-						console.log(e);
-					};
-				}).catch(() => {
-
-					/*- We want to try to connect a set number of times -*/
-					if (n > 0) {
-						this.setState({
-							connectStaus: `Failed to connect to servers, retrying (${MAX_POLLING-n+1}/${MAX_POLLING})`,
-							connectStausCode: 403
-						});
-
-						/*- Try again in x millis -*/
-						setTimeout(() => {
-							if (!this._is_mounted) return;
-							else request_backend(n-1);
-						}, 500);
-					}else{
-						this.setState({
-							connectStaus: "Failed to connect to servers.",
-							connectStausCode: 404,
-						});
-					}
-				});
+						return wss_connect();
+					}catch { retry_connect(n) };
+				}).catch(() => retry_connect(n));
 			}
+
+			/*- Conenct to the websocket -*/
+			const wss_connect = () => {
+				if (!this._is_mounted) return;
+
+				/*- If the client is ready -*/
+				if (this.client.readyState === WebSocket.OPEN) {
+					this.setState({
+						connectStaus: "Connected to servers.",
+						connectStausCode: 200,
+					});
+				}else{
+					/*- If the client is not ready -*/
+					this.setState({
+						connectStaus: "Connecting to servers...",
+						connectStausCode: 400,	
+					});
+				}
+
+				console.log("Conecting to websocket...");
+
+				/*- Connect to the websocket -*/
+				if (this.client.readyState === WebSocket.OPEN) {
+					if (!this._is_mounted) return console.log("Client is not mounted");
+
+					console.log("Connected to websocket.");
+
+					/*- Send a join request -*/
+					this.client.send(JSON.stringify({
+						type: "join-room",
+						data: {
+							suid,
+							roomid: this.state.roomid,
+						}
+					}));
+				}else {
+					console.log("Client not ready.");
+				}
+			};
+
 			request_backend(MAX_POLLING);
 		})();
 
@@ -172,7 +213,13 @@ class Lobby extends React.PureComponent {
 				if(this._is_mounted) this.make_notice(`User {${response.data.new_user}} joined!`);
 
 			}else if (response_type === "start") {
-				this._navigation.navigate("Chat");
+
+				/*- Pass the roomid as a prop -*/
+				this._navigation.navigate("Chat", {
+					roomid: this.state.roomid,
+					suid: this.state.suid,
+				});
+
 			}else if (response_type === "leave") {
 				const { user_list, new_host, leaver } = response.data;
 				const suid = this.state.suid;
@@ -191,10 +238,10 @@ class Lobby extends React.PureComponent {
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/
-		this.client.onerror = () => { this.make_notice("There was an error"); };
+		this.client.onerror = (e) => { console.log(e) };
 	};
 
-	/*- Like componentWillUnmount -*/
+	/*- Before unmounting -*/
 	componentWillUnmount = () => {
 		this._is_mounted = false;
 	};
@@ -216,7 +263,7 @@ class Lobby extends React.PureComponent {
 
 						<View style={styles.lobbyProfileContainer}>
 							{this.state.users && this.state.users.map((user, index) => {
-								return <Image key={index} source={{ uri: `https://artur.red/api/profile-data/image/${user}`}} style={styles.lobbyProfileImage} />
+								return <Image key={index} source={{ uri: `${this._server_cdn}/api/profile-data/image/${user}`}} style={styles.lobbyProfileImage} />
 							})}
 						</View>
 
@@ -227,6 +274,10 @@ class Lobby extends React.PureComponent {
 							: <StartButton onPress={this.leave_room}>Cancel</StartButton> 
 						}
 						{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
+
+						<BackButton onPress={() => {
+							this.leave_room();
+						}} />
 					</>
 					:
 					<>

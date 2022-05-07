@@ -368,8 +368,6 @@ const styles = {
 			height: 40,
 			borderRadius: 25,
 			marginRight: 10,
-
-			backgroundColor: "blue",
 		},
 
 		/*- The little snippet that often lies in message corners yk -*/
@@ -410,6 +408,13 @@ const styles = {
 
 			marginTop: 2.5,
 			marginBottom: 10,
+		},
+
+		systemMessageContainer: {
+			width: "100%",
+			display: "flex",
+			justifyContent: "center",
+				alignItems: "center",
 		},
 	}),
 

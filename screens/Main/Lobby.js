@@ -1,5 +1,5 @@
 import { View, Image, ActivityIndicator } from "react-native";
-import { def as styles } from "../../Style";
+import { def as styles, lobby } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -41,8 +41,8 @@ class Lobby extends React.PureComponent {
 
 	/*- Backend server URL handling -*/
 	_server_handler = new ServerHandler();
-	_server_url = this._server_handler.get_url();
-	_server_cdn = this._server_handler.get_cdn();
+	_server_url     = this._server_handler.get_url();
+	_server_cdn     = this._server_handler.get_cdn();
 	
 	/*- The websocket client -*/
 	client = new W3CWebSocket(this._server_url);
@@ -105,9 +105,8 @@ class Lobby extends React.PureComponent {
 			/*- Get the users suid which is needed for joining lobbies -*/
 			const suid = this.state.suid;
 
+			/*- If connecting to backend failed, try again -*/
 			const retry_connect = (n) => {
-
-				console.log("Retrying connection..." + n);
 
 				/*- We want to try to connect a set number of times -*/
 				if (n > 0) {
@@ -153,14 +152,15 @@ class Lobby extends React.PureComponent {
 
 					/*- Make a websocket request to the game id -*/
 					try{
-						return wss_connect();
+						return wss_connect(5);
 					}catch { retry_connect(n) };
 				}).catch(() => retry_connect(n));
 			}
 
 			/*- Conenct to the websocket -*/
-			const wss_connect = () => {
+			const wss_connect = (n) => {
 				if (!this._is_mounted) return;
+				if (n <= 0) return;
 
 				/*- If the client is ready -*/
 				if (this.client.readyState === WebSocket.OPEN) {
@@ -171,18 +171,14 @@ class Lobby extends React.PureComponent {
 				}else{
 					/*- If the client is not ready -*/
 					this.setState({
-						connectStaus: "Connecting to servers...",
+						connectStaus: `Connecting to servers... (${n})`,
 						connectStausCode: 400,	
 					});
 				}
 
-				console.log("Conecting to websocket...");
-
 				/*- Connect to the websocket -*/
 				if (this.client.readyState === WebSocket.OPEN) {
-					if (!this._is_mounted) return console.log("Client is not mounted");
-
-					console.log("Connected to websocket.");
+					if (!this._is_mounted) return;
 
 					/*- Send a join request -*/
 					this.client.send(JSON.stringify({
@@ -193,7 +189,10 @@ class Lobby extends React.PureComponent {
 						}
 					}));
 				}else {
-					console.log("Client not ready.");
+					console.log("Client not ready." + n);
+					setTimeout(() => {
+						wss_connect(n-1);
+					}, 500);
 				}
 			};
 
@@ -251,7 +250,11 @@ class Lobby extends React.PureComponent {
 		return (
 			<View style={styles.container}>
 				{
-					this.state.roomFound ?
+					(
+						/*- If the room was found and the join request was succesfully sent -*/
+						this.state.roomFound
+						&& this.state.connectStausCode === 200	
+					) ?
 					<>
 						{/*- Display the games current status -*/}
 						<P>{
@@ -261,10 +264,10 @@ class Lobby extends React.PureComponent {
 						}</P>
 						<BIGTEXT>{this.state.users && this.state.users.length}/{MAX_USERS}</BIGTEXT>
 
-						<View style={styles.lobbyProfileContainer}>
-							{this.state.users && this.state.users.map((user, index) => {
-								return <Image key={index} source={{ uri: `${this._server_cdn}/api/profile-data/image/${user}`}} style={styles.lobbyProfileImage} />
-							})}
+						<View style={lobby.lobbyProfileContainer}>
+							{this.state.users && this.state.users.map((user, index) => 
+								<Image key={index} source={{ uri: `${this._server_cdn}/api/profile-data/image/${user}`}} style={lobby.lobbyProfileImage} />
+							)}
 						</View>
 
 						{/*- The admin will recieve an X button in the top left instead of

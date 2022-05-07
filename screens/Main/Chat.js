@@ -2,7 +2,7 @@ import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, 
 import { chat as styles, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import { BackButton } from "../../components/AtomBundle";
+import { BackButton, P } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 
 /*- Map every message to this -*/
@@ -12,7 +12,12 @@ class ChatMessage extends React.PureComponent {
 
 		/*- Changeable -*/
 		this.user_owned = this.props.user_owned;
+		this.suid = this.props.suid;
 	}
+
+	/*- Server handler -*/
+	_server_handler = new ServerHandler();
+	_server_cdn = this._server_handler.get_cdn();
 
 	/*- Render -*/
 	render() {
@@ -28,7 +33,7 @@ class ChatMessage extends React.PureComponent {
 						don't want to display their avatar -*/
 						this.user_owned
 							? null
-							: <Image source={{ uri: "https://s" }} style={styles.chatMessageAvatar} />
+							: <Image source={{ uri: `${this._server_cdn}/api/profile-data/image/${this.suid}` }} style={styles.chatMessageAvatar} />
 					}
 
 					{/*- Text area -*/}
@@ -65,6 +70,25 @@ class ChatMessage extends React.PureComponent {
 			</React.Fragment>
 		);
 	}
+};
+
+/*- System messages like when someone leaves -*/
+class SysMessage extends React.PureComponent {
+	constructor(props) {
+		super(props);
+
+		/*- Text -*/
+		this.text = this.props.text;
+	}
+
+	/*- Render -*/
+	render() {
+		return (
+			<View {...this.props} style={styles.systemMessageContainer}>
+				<P>{this.text}</P>
+			</View>
+		)
+	};
 };
 
 /*- Main scene -*/
@@ -136,7 +160,7 @@ class Chat extends React.PureComponent {
 	addMessage(data) {
 
 		/*- Get the data -*/
-		const { text, sender, time } = data;
+		const { text, sender, time, type } = data;
 
 		if (this._is_mounted) {
 			this.setState({
@@ -147,6 +171,7 @@ class Chat extends React.PureComponent {
 						owned: sender === this.suid,
 						owner: sender,
 						time,
+						type,
 					},
 				],
 			});
@@ -195,6 +220,13 @@ class Chat extends React.PureComponent {
 			/*- Check the message types -*/
 			if (response_type === "message") {
 				this.addMessage(response.data);
+			}else if (response_type === "leave") {
+				this.addMessage({
+					text: "Someone left the room",
+					sender: "",
+					time: get_hh_mm(),
+					type: "system",
+				});
 			}
 		};
 
@@ -214,9 +246,10 @@ class Chat extends React.PureComponent {
 
 				{/*- All messages here -*/}
 				<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
-					{this.state.messages.map((obj, index) => (
-						<ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} />
-					))}
+					{this.state.messages.map((obj, index) => {
+						if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
+						else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} suid={obj.owner} />
+					})}
 				</ScrollView>
 
 				<View style={styles.messageInputContainer}>

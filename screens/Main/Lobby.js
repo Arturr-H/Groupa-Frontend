@@ -1,5 +1,5 @@
-import { View, Image, ActivityIndicator } from "react-native";
-import { def as styles, lobby } from "../../Style";
+import { View, Image, ActivityIndicator, Text } from "react-native";
+import { def as styles, lobby, chat } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -14,6 +14,50 @@ const MIN_USERS = 1;
 const MAX_POLLING = 5;
 
 // TODO: Make a cache map for every SUID - to avoid unnecessary requests
+
+
+class UserPfp extends React.PureComponent {
+	constructor(props) {
+		super(props);
+		
+		this.suid = this.props.user;
+		this.index = this.props.index;
+		this.userData = this.props.userData.data;
+
+		/*- Bind -*/
+		this.username = this.username.bind(this);
+	}
+
+	/*- Backend server URL handling -*/
+	_server_handler = new ServerHandler();
+	_server_url     = this._server_handler.get_url();
+	_server_cdn     = this._server_handler.get_cdn();
+
+	/*- Make a username -*/
+	username(n) {
+		return `@${n}`;
+	}
+
+	/*- Render -*/
+	render() {
+		return (
+			<View style={styles.lobbyPfpContainer}>
+				<Image
+					key={this.index}
+					source={{ uri: this.userData.profile }}
+					style={lobby.lobbyProfileImage}
+				/>
+				<Text style={[chat.chatMessageUserText, { textAlign:"center" }]}>{
+					this.props.suid === this.userData.suid
+						? "You"
+						: this.username(this.userData.username)
+				}</Text>
+			</View>
+		);
+	};
+};
+
+/*- The scene -*/
 class Lobby extends React.PureComponent {
 
 	constructor(props) {
@@ -22,6 +66,7 @@ class Lobby extends React.PureComponent {
 		/*- Changeable -*/
 		this.state = {
 			users: [],
+			UserCache: {},
 			noticeEnabled: false,
 			notice: "",
 			roomFound: "",
@@ -37,6 +82,8 @@ class Lobby extends React.PureComponent {
 		this.make_notice = this.make_notice.bind(this);
 		this.leave_room = this.leave_room.bind(this);
 		this.start_room = this.start_room.bind(this);
+		this.update_usercache = this.update_usercache.bind(this);
+		this.GetUserVal = this.GetUserVal.bind(this);
 	}
 
 	/*- Backend server URL handling -*/
@@ -57,6 +104,15 @@ class Lobby extends React.PureComponent {
 			notice,
 			noticeEnabled: true,
 		});
+	}
+
+	/*- UserCache functions -*/
+	GetUserVal = (suid, key) => {
+		try{
+			return this.state.UserCache[suid].data[key];
+		}catch {
+			return null;
+		}
 	}
 
 	/*- When the user wants to leave -*/
@@ -93,6 +149,37 @@ class Lobby extends React.PureComponent {
 			}
 		}));
 	}
+
+	/*- Update the user cache on demand -*/
+	update_usercache = async (users) => {
+
+		/*- Loop through every user and check if it's in the map -*/
+		users.forEach(user => {
+			/*- If we can't find the suid key -*/
+			if (!this.state.UserCache[user]) {
+				/*- Add it to the map -*/
+				fetch(`${this._server_cdn}/api/profile-data`, {
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						"Accept": "application/json",
+						suid: user,
+					},
+				}).then(res => res.json()).then(data => {
+					this.setState({
+						UserCache: {
+							...this.state.UserCache,
+							[user]: data,
+						},
+					}, () => {
+						console.log("\n\n\n\n")
+						console.log(this.state.UserCache);
+						console.log("\n\n\n\n")
+					});
+				});
+			};
+		});
+	};
 
 	/*- On mount -*/
 	componentDidMount = () => {
@@ -148,6 +235,8 @@ class Lobby extends React.PureComponent {
 						roomFound: true,
 						isHost: result.data.host === suid,
 						roomid: data.roomid,
+					}, () => {
+						this.update_usercache(this.state.users);
 					});
 
 					/*- Make a websocket request to the game id -*/
@@ -206,7 +295,9 @@ class Lobby extends React.PureComponent {
 
 			if (response_type === "join-room") {
 				/*- Update the userlist -*/
-				if(this._is_mounted) this.setState({ users: response.data.user_list });
+				if(this._is_mounted) this.setState({ users: response.data.user_list }, () => {
+					this.update_usercache(this.state.users);
+				});
 				
 				/*- Notify all users -*/
 				if(this._is_mounted) this.make_notice(`User {${response.data.new_user}} joined!`);
@@ -217,6 +308,7 @@ class Lobby extends React.PureComponent {
 				this._navigation.navigate("Chat", {
 					roomid: this.state.roomid,
 					suid: this.state.suid,
+					userCache: this.state.UserCache,
 				});
 
 			}else if (response_type === "leave") {
@@ -264,10 +356,18 @@ class Lobby extends React.PureComponent {
 						}</P>
 						<BIGTEXT>{this.state.users && this.state.users.length}/{MAX_USERS}</BIGTEXT>
 
+						{/*- Display the users -*/}
 						<View style={lobby.lobbyProfileContainer}>
-							{this.state.users && this.state.users.map((user, index) => 
-								<Image key={index} source={{ uri: `${this._server_cdn}/api/profile-data/image/${user}`}} style={lobby.lobbyProfileImage} />
-							)}
+							{this.state.UserCache && Object.keys(this.state.UserCache).map((key) => {
+								const userData = this.state.UserCache[key];
+								return (
+									<UserPfp
+										key={key}
+										userData={userData}
+										suid={this.state.suid}
+									/>
+								);
+							})}
 						</View>
 
 						{/*- The admin will recieve an X button in the top left instead of

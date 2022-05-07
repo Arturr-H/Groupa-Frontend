@@ -12,7 +12,8 @@ class ChatMessage extends React.PureComponent {
 
 		/*- Changeable -*/
 		this.user_owned = this.props.user_owned;
-		this.suid = this.props.suid;
+		this.userCache = this.props.userCache;
+
 	}
 
 	/*- Server handler -*/
@@ -33,7 +34,7 @@ class ChatMessage extends React.PureComponent {
 						don't want to display their avatar -*/
 						this.user_owned
 							? null
-							: <Image source={{ uri: `${this._server_cdn}/api/profile-data/image/${this.suid}` }} style={styles.chatMessageAvatar} />
+							: <Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
 					}
 
 					{/*- Text area -*/}
@@ -42,7 +43,7 @@ class ChatMessage extends React.PureComponent {
 							/*- Only show the username if message is not owned -*/
 							this.user_owned
 								? null
-								: <Text style={styles.chatMessageUserText}>@useer</Text>
+								: <Text style={styles.chatMessageUserText}>@{this.userCache.username}</Text>
 						}
 						<Text style={[
 							styles.chatMessageText,
@@ -55,12 +56,6 @@ class ChatMessage extends React.PureComponent {
 							{this.props.text}
 						</Text>
 					</View>
-
-					<View style={
-						this.user_owned
-							? styles.messageSnippetOwned
-							: styles.messageSnippet
-					}/>
 				</View>
 				<Text style={
 					this.user_owned
@@ -109,6 +104,7 @@ class Chat extends React.PureComponent {
 		/*- Variables -*/
 		this.roomid = this.props.route.params.roomid;
 		this.suid = this.props.route.params.suid;
+		this.userCache = this.props.route.params.userCache;
 
 		/*- Binding functions -*/
 		this.makeNotice = this.makeNotice.bind(this);
@@ -247,8 +243,11 @@ class Chat extends React.PureComponent {
 				{/*- All messages here -*/}
 				<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
 					{this.state.messages.map((obj, index) => {
+						/*- If the message comes from the system like when someone leaves -*/
 						if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
-						else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} suid={obj.owner} />
+
+						/*- If the message is owned by a user -*/
+						else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
 					})}
 				</ScrollView>
 

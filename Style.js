@@ -324,6 +324,8 @@ const styles = {
 			flexDirection: "row",
 
 			borderRadius: 20,
+			borderBottomLeftRadius: 0,
+
 			// minWidth: 100,
 			maxWidth: width * 0.8,
 		},
@@ -342,6 +344,7 @@ const styles = {
 			flexDirection: "row",
 
 			borderRadius: 20,
+			borderBottomRightRadius: 0,
 			// minWidth: 100,
 			maxWidth: width * 0.8,
 		},
@@ -368,28 +371,6 @@ const styles = {
 			height: 40,
 			borderRadius: 25,
 			marginRight: 10,
-		},
-
-		/*- The little snippet that often lies in message corners yk -*/
-		messageSnippetOwned: {
-			backgroundColor: stylevar.colors.main,
-
-			position: "absolute",
-			bottom: 0,
-			right: 0,
-
-			padding: 10,
-			zIndex: -1
-		},
-		messageSnippet: {
-			backgroundColor: stylevar.colors.fg_second,
-			
-			position: "absolute",
-			bottom: 0,
-			left: 0,
-
-			padding: 10,
-			zIndex: -1,
 		},
 
 		chatMessageTimestampOwned: {
@@ -509,6 +490,16 @@ const styles = {
 			marginVertical: 10,
 
 			...Default.border,
+		},
+
+		lobbyPfpContainer: {
+			display: "flex",
+			flexDirection: "column",
+
+			justifyContent: "center",
+				alignItems: "center",
+
+			textAlign: "center",
 		},
 	}),
 };

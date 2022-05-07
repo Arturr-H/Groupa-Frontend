@@ -24,7 +24,8 @@
     "react-native-safe-area-context": "^4.2.5",
     "react-native-screens": "^3.13.1",
     "react-native-web": "0.17.1",
-    "websocket": "^1.0.34"
+    "websocket": "^1.0.34",
+    "expo-linear-gradient": "~11.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"

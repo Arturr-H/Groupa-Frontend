@@ -171,10 +171,6 @@ class Lobby extends React.PureComponent {
 							...this.state.UserCache,
 							[user]: data,
 						},
-					}, () => {
-						console.log("\n\n\n\n")
-						console.log(this.state.UserCache);
-						console.log("\n\n\n\n")
 					});
 				});
 			};

@@ -4,6 +4,7 @@ import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { BackButton, P } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
+import { LinearGradient } from "expo-linear-gradient";
 
 /*- Map every message to this -*/
 class ChatMessage extends React.PureComponent {
@@ -23,27 +24,38 @@ class ChatMessage extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<React.Fragment>
+			<View style={
+				this.user_owned
+					? styles.chatMessageWrapperOwned
+					: styles.chatMessageWrapper
+			}>
+				{/*- If the user "owns" the message we
+					don't want to display their avatar -*/
+					this.user_owned
+					? null
+					: <Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
+				}
 				<View style={
 					/*- We want dependent styles (if message is owned or not) -*/
 					this.user_owned
 					? styles.chatMessageOwned
 					: styles.chatMessage
 				}>
-					{/*- If the user "owns" the message we
-						don't want to display their avatar -*/
-						this.user_owned
-							? null
-							: <Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
-					}
-
 					{/*- Text area -*/}
 					<View style={styles.chatMessageTextArea}>
 						{
 							/*- Only show the username if message is not owned -*/
-							this.user_owned
-								? null
-								: <Text style={styles.chatMessageUserText}>@{this.userCache.username}</Text>
+								<Text style={[styles.chatMessageUserText, 
+									this.user_owned
+										? { color: "white" }
+										: null
+								]}>
+									{
+										this.user_owned
+											? "You"
+											: "@" + this.userCache.username
+									} : {this.props.time}
+								</Text>
 						}
 						<Text style={[
 							styles.chatMessageText,
@@ -57,12 +69,7 @@ class ChatMessage extends React.PureComponent {
 						</Text>
 					</View>
 				</View>
-				<Text style={
-					this.user_owned
-						? styles.chatMessageTimestampOwned
-						: styles.chatMessageTimestamp
-				}>{this.props.time}</Text>
-			</React.Fragment>
+			</View>
 		);
 	}
 };
@@ -111,6 +118,7 @@ class Chat extends React.PureComponent {
 		this.sendMessage = this.sendMessage.bind(this);
 		this.addMessage = this.addMessage.bind(this);
 		this.leaveRoom = this.leaveRoom.bind(this);
+		this.submitEditing = this.submitEditing.bind(this);
 
 		/*- Refs -*/
 		this.scrollView = React.createRef();
@@ -151,6 +159,10 @@ class Chat extends React.PureComponent {
 			},
 		}));
 	};
+	submitEditing()	{
+		this.sendMessage(this.state.message);
+		this.setState({ message: "" });
+	};
 
 	/*- Add message function -*/
 	addMessage(data) {
@@ -158,8 +170,49 @@ class Chat extends React.PureComponent {
 		/*- Get the data -*/
 		const { text, sender, time, type } = data;
 
+		/*- if message merging was successful -*/
+		let merge_success = false;
+
 		if (this._is_mounted) {
-			this.setState({
+
+			/*- So, message grouping -*/
+			/*- We'll begin by checking if the previous
+				message is owned by the current user, if so,
+				we'll group these messages' texts together! -*/
+
+			const amount_of_messages = this.state.messages.length;
+
+			/*- Check -*/
+			if (amount_of_messages > 0) {
+				const last_message = {
+					text: this.state.messages[amount_of_messages - 1].text,
+					owner: this.state.messages[amount_of_messages - 1].owner,
+				};
+
+				/*- If the last message is owned by the same person -*/
+				if (last_message.owner === sender) {
+
+					merge_success = true;
+
+					/*- We'll add the new message to the last message's text -*/
+					this.setState({
+						messages: [
+							...this.state.messages.slice(0, amount_of_messages - 1),
+							{
+								text: last_message.text + "\n" + text,
+								owner: sender,
+								owned: sender === this.suid,
+								time,
+								type,
+							},
+							...this.state.messages.slice(amount_of_messages),
+						],
+					});
+				}
+			}
+
+			/*- Otherwise, we'll add the new message to the messages array -*/
+			if (!merge_success) this.setState({
 				messages: [
 					...this.state.messages,
 					{
@@ -238,41 +291,47 @@ class Chat extends React.PureComponent {
 
 	render() {
 		return (
-			<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
+			<React.Fragment>
 
-				{/*- All messages here -*/}
-				<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
-					{this.state.messages.map((obj, index) => {
-						/*- If the message comes from the system like when someone leaves -*/
-						if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
+				{/*- Top gradient-overlay -*/}
+				<LinearGradient
+                    colors={["rgb(255, 255, 255)", "rgba(255, 255, 255, 0)"]}
+                	style={styles.gradientOverlay}
+                />
 
-						/*- If the message is owned by a user -*/
-						else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
-					})}
-				</ScrollView>
+				<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
 
-				<View style={styles.messageInputContainer}>
-					<TextInput
-						style={styles.messageInput}
-						placeholder="Send a message..."
-						onChangeText={(text) => {
-							this.setState({
-								message: text,
-							});
-						}}
-						value={this.state.message}
+					{/*- All messages here -*/}
+					<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
+						{this.state.messages.map((obj, index) => {
+							/*- If the message comes from the system like when someone leaves -*/
+							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
-						/*- Send message when enter is pressed -*/
-						onSubmitEditing={() => {
-							this.sendMessage(this.state.message);
-							this.setState({ message: "" });
-						}}
-					/>
-					<TouchableHighlight onPress={() => {}} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
-				</View>
+							/*- If the message is owned by a user -*/
+							else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
+						})}
+					</ScrollView>
 
+					<View style={styles.messageInputContainer}>
+						<TextInput
+							style={styles.messageInput}
+							placeholder="Send a message..."
+							onChangeText={(text) => {
+								this.setState({
+									message: text,
+								});
+							}}
+							value={this.state.message}
+
+							/*- Send message when enter is pressed -*/
+							onSubmitEditing={this.submitEditing}
+						/>
+						<TouchableHighlight onPress={this.submitEditing} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
+					</View>
+
+					</KeyboardAvoidingView>	
 				<BackButton onPress={this.leaveRoom} />
-			</KeyboardAvoidingView>
+			</React.Fragment>
 		);
 	}
 };

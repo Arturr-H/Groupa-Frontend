@@ -80,7 +80,7 @@ const defaults = StyleSheet.create({
 });
 
 /*- All other styles go here -*/
-const styles = { 
+const styles = {
 	register: StyleSheet.create({
 		...defaults,
 
@@ -181,6 +181,8 @@ const styles = {
 			top: 60,
 			left: 20,
 			opacity: 0.5,
+
+			zIndex: 39,
 		}
 	}),
 
@@ -313,11 +315,26 @@ const styles = {
 			paddingHorizontal: 20,
 			zIndex: 11,
 		},
+		chatMessageWrapper: {
+			display: "flex",
+			flexDirection: "row",
+
+			marginBottom: 10,
+		},
+		chatMessageWrapperOwned: {
+			display: "flex",
+			flexDirection: "row",
+			marginLeft: "auto",
+
+			marginBottom: 10,
+		},
+
 		chatMessage: {
 			backgroundColor: stylevar.colors.fg_second,
 
 			padding: 10,
 			paddingHorizontal: 15,
+			paddingRight: 20,
 
 			position: "relative",
 			display: "flex",
@@ -327,7 +344,7 @@ const styles = {
 			borderBottomLeftRadius: 0,
 
 			// minWidth: 100,
-			maxWidth: width * 0.8,
+			maxWidth: width * 0.7,
 		},
 		chatMessageOwned: {
 			backgroundColor: stylevar.colors.main,
@@ -335,10 +352,7 @@ const styles = {
 			padding: 10,
 			paddingHorizontal: 15,
 
-			marginLeft: "auto",
 			position: "relative",
-			display: "flex",
-			flexDirection: "row",
 
 			display: "flex",
 			flexDirection: "row",
@@ -346,11 +360,12 @@ const styles = {
 			borderRadius: 20,
 			borderBottomRightRadius: 0,
 			// minWidth: 100,
-			maxWidth: width * 0.8,
+			maxWidth: width * 0.77,
 		},
 		chatMessageTextArea: {
 			display: "flex",
 			flexDirection: "column",
+			flexShrink: 1,
 		},
 		chatMessageText: {
 			fontWeight: "400",
@@ -371,6 +386,9 @@ const styles = {
 			height: 40,
 			borderRadius: 25,
 			marginRight: 10,
+
+			backgroundColor: "blue",
+			marginTop: "auto"
 		},
 
 		chatMessageTimestampOwned: {
@@ -378,17 +396,13 @@ const styles = {
 			fontWeight: "300",
 			fontSize: 12,
 			marginLeft: "auto",
-
-			marginTop: 2.5,
-			marginBottom: 10,
 		},
 		chatMessageTimestamp: {
 			color: stylevar.text.light,
 			fontWeight: "300",
 			fontSize: 12,
 
-			marginTop: 2.5,
-			marginBottom: 10,
+			marginRight: 10,
 		},
 
 		systemMessageContainer: {
@@ -397,6 +411,15 @@ const styles = {
 			justifyContent: "center",
 				alignItems: "center",
 		},
+
+		gradientOverlay: {
+			top: 0,
+			left: 0,
+			zIndex: 2,
+			width: "100%",
+			height: 150,
+			position: "absolute",
+		}
 	}),
 
 	home: StyleSheet.create({
@@ -509,4 +532,5 @@ module.exports = {
 	def: defaults,
 	stylevar,
 	Default,
+	height, width,
 }

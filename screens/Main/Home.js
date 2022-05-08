@@ -59,11 +59,6 @@ class FriendGetter extends React.PureComponent {
 	render() {
 		return (
 			<React.Fragment>
-				<FriendRow key={"ja1wawdfohauw"} image={"shittin"} displayname={"Shitting man 123"} username={"artur"} />
-				<FriendRow key={"jaw4awdfohauw"} image={"shittin"} displayname={"Cool"} username={"some_guy"} />
-				<FriendRow key={"jawawd2foh2auw"} image={"shittin"} displayname={"Hejsan svejsan"} username={"coolman"} />
-				<FriendRow key={"jaw3awdfohauw"} image={"shittin"} displayname={"Din mamma"} username={"shitabta"} />
-				<FriendRow key={"jaw1aw2dfohauw"} image={"shittin"} displayname={"Öeuagbh"} username={"oakwfp"} />
 				{
 					this.state.friendsData &&
 					this.state.friendsData.map((friendData, key) => {

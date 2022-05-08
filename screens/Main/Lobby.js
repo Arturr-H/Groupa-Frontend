@@ -216,6 +216,8 @@ class Lobby extends React.PureComponent {
 
 				if (!this._is_mounted) return;
 
+				console.log(`${this._server_url}/api/join-room`);
+
 				/*- Try find a room -*/
 				await fetch(`${this._server_url}/api/join-room`, {
 					method: "GET",

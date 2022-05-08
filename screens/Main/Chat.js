@@ -1,10 +1,11 @@
-import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, Text, Image } from "react-native";
+import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, TouchableOpacity, Text, Image } from "react-native";
 import { chat as styles, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { BackButton, P } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { LinearGradient } from "expo-linear-gradient";
+import { Modal } from "../../components/molecules/Modal";
 
 /*- Map every message to this -*/
 class ChatMessage extends React.PureComponent {
@@ -33,7 +34,9 @@ class ChatMessage extends React.PureComponent {
 					don't want to display their avatar -*/
 					this.user_owned
 					? null
-					: <Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
+					: <TouchableOpacity activeOpacity={0.8} onPress={() => this.props.onProfilePress()}>
+						<Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
+					</TouchableOpacity>
 				}
 				<View style={
 					/*- We want dependent styles (if message is owned or not) -*/
@@ -48,13 +51,17 @@ class ChatMessage extends React.PureComponent {
 								<Text style={[styles.chatMessageUserText, 
 									this.user_owned
 										? { color: "white" }
-										: null
+										: null,
+
+									this.user_owned
+										? { textAlign: "right" }
+										: { textAlign: "left" },
 								]}>
 									{
 										this.user_owned
 											? "You"
 											: "@" + this.userCache.username
-									} : {this.props.time}
+									} : {get_hh_mm(this.props.time)}
 								</Text>
 						}
 						<Text style={[
@@ -63,6 +70,10 @@ class ChatMessage extends React.PureComponent {
 								color: this.user_owned
 									? stylevar.text.white
 									: stylevar.text.default,
+
+								textAlign: this.user_owned
+									? "right"
+									: "left",
 							}
 						]}>
 							{this.props.text}
@@ -106,6 +117,9 @@ class Chat extends React.PureComponent {
 			notice: "",
 			messages: [],
 			message: "",
+
+			modalEnabled: false,
+			modalData: {},
 		};
 
 		/*- Variables -*/
@@ -155,7 +169,7 @@ class Chat extends React.PureComponent {
 				text,
 				sender: this.suid,
 				roomid: this.roomid,
-				time: get_hh_mm(),
+				time: new Date().getTime(),
 			},
 		}));
 	};
@@ -163,6 +177,22 @@ class Chat extends React.PureComponent {
 		this.sendMessage(this.state.message);
 		this.setState({ message: "" });
 	};
+
+	/*- Modals -*/
+	showModal(userObj) {
+
+		/*- The users SUID -*/
+		const suid = userObj.owner;
+
+		/*- The users profile-data -*/
+		const data = this.userCache[suid].data;
+
+		/*- Set the modal data -*/
+		this.setState({
+			modalEnabled: true,
+			modalData: { ...data },
+		});
+	}
 
 	/*- Add message function -*/
 	addMessage(data) {
@@ -187,10 +217,16 @@ class Chat extends React.PureComponent {
 				const last_message = {
 					text: this.state.messages[amount_of_messages - 1].text,
 					owner: this.state.messages[amount_of_messages - 1].owner,
+					time: this.state.messages[amount_of_messages - 1].time,
 				};
 
-				/*- If the last message is owned by the same person -*/
-				if (last_message.owner === sender) {
+				if (
+					/*- If the last message is owned by the same person -*/
+					last_message.owner === sender
+
+					/*- And the message was sent within the last minute -*/
+					&& (time - last_message.time) < 60 * 1000
+				) {
 
 					merge_success = true;
 
@@ -226,7 +262,7 @@ class Chat extends React.PureComponent {
 			});
 
 			/*- Scroll to the bottom -*/
-			this.scrollView.scrollToEnd();
+			this.scrollView.scrollToEnd({ animated: true });
 		}
 	};
 
@@ -308,8 +344,9 @@ class Chat extends React.PureComponent {
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
 						})}
+
 					</ScrollView>
 
 					<View style={styles.messageInputContainer}>
@@ -329,18 +366,31 @@ class Chat extends React.PureComponent {
 						<TouchableHighlight onPress={this.submitEditing} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
 					</View>
 
-					</KeyboardAvoidingView>	
+				</KeyboardAvoidingView>	
 				<BackButton onPress={this.leaveRoom} />
+
+				{/*- Modal for profile -*/}
+				{
+					this.state.modalEnabled
+					&&
+					<Modal data={this.state.modalData} onClose={() => {
+						this.setState({
+							modalEnabled: false,
+						});
+					}} />	
+				}
 			</React.Fragment>
 		);
 	}
 };
 
 /*- Time functions -*/
-const get_hh_mm = () => {
-	const date = new Date();
-	const hh = date.getHours();
-	const mm = date.getMinutes();
+const get_hh_mm = (date) => {
+
+	const time = new Date(date);
+
+	const hh = time.getHours();
+	const mm = time.getMinutes();
 
 	let end = "";
 	if (hh < 10) {

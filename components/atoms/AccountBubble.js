@@ -1,4 +1,4 @@
-import { def as styles } from "../../Style";
+import { home as styles } from "../../Style";
 import { TouchableOpacity, Image } from "react-native";
 import React from "react";
 

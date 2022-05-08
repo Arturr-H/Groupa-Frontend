@@ -33,11 +33,11 @@ const Default = {
 		shadowColor: "#000",
 		shadowOffset: {
 			width: 0,
-			height: -5,
+			height: 10,
 		},
-		shadowOpacity: 0.1,
-		shadowRadius: 10,
-		elevation: 5,
+		shadowOpacity: 0.175,
+		shadowRadius: 15,
+		elevation: 1,
 	}
 }
 /*- CSS units -*/
@@ -68,14 +68,15 @@ const defaults = StyleSheet.create({
 		height: 120,
 		borderBottomWidth: 1,
 		borderBottomColor: stylevar.border.thick,
-
-		paddingTop: 40,
 		paddingHorizontal: 15,
 
 		display: "flex",
 		flexDirection: "row",
 		justifyContent: "space-between",
 		alignItems: "center",
+
+		paddingBottom: 20,
+		paddingTop: 40,
 	},
 });
 
@@ -151,6 +152,11 @@ const styles = {
 			justifyContent: "center",
 			alignItems: "center",
 		},
+		hollowButton: {
+			backgroundColor: "transparent",
+			borderWidth: 2,
+			borderColor: stylevar.colors.main,
+		},
 		submitInputText: {
 			color: "#fff",
 			fontWeight: "bold",
@@ -183,7 +189,42 @@ const styles = {
 			opacity: 0.5,
 
 			zIndex: 39,
-		}
+		},
+
+		modalContainer: {
+			position: "absolute",
+
+			width: width*0.8,
+			height: height*0.6,
+
+			left: "50%",
+			top: "50%",
+			transform: [{ translateX: -width*0.4 }, { translateY: -height*0.3 }],
+			opacity: 0,
+
+			borderRadius: 10,
+			...Default.border,
+
+			backgroundColor: "rgba(0, 0, 0, 0.025)",
+			...Default.shadow,
+		},
+		modal: {
+			width: "100%",
+			height: "100%",
+			borderRadius: 10,
+			overflow: "hidden",
+
+			padding: 10,
+		},
+		modalHeader: {
+			display: "flex",
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+
+			height: 70,
+			paddingBottom: 10,
+		},
 	}),
 
 	text: StyleSheet.create({
@@ -193,7 +234,7 @@ const styles = {
 			color: stylevar.text.default,
 		},
 		h2: {
-			fontSize: REM(2),
+			fontSize: REM(1.8),
 			fontWeight: "bold",
 			color: stylevar.text.default,
 		},
@@ -207,6 +248,13 @@ const styles = {
 			fontWeight: "900",
 			color: "rgb(70, 70, 70)",
 			fontFamily: "PoppinsBold"
+		},
+		hr: {
+			width: "100%",
+			height: 1,
+			backgroundColor: stylevar.border.light,
+
+			marginVertical: 10,
 		},
 	}),
 
@@ -309,7 +357,7 @@ const styles = {
 			position: "relative",
 
 			width,
-			flexGrow: 1,
+			height: "100%",
 
 			paddingTop: 20,
 			paddingHorizontal: 20,
@@ -356,6 +404,7 @@ const styles = {
 
 			display: "flex",
 			flexDirection: "row",
+			textAlign: "right",
 
 			borderRadius: 20,
 			borderBottomRightRadius: 0,
@@ -372,6 +421,7 @@ const styles = {
 
 			flexShrink: 1,
 			flexWrap: "wrap",
+			lineHeight: 20,
 		},
 		chatMessageUserText: {
 			color: stylevar.text.light,
@@ -417,7 +467,7 @@ const styles = {
 			left: 0,
 			zIndex: 2,
 			width: "100%",
-			height: 150,
+			height: 100,
 			position: "absolute",
 		}
 	}),
@@ -466,7 +516,7 @@ const styles = {
 		},
 
 		accountBubble: {
-			height: "70%",
+			height: "100%",
 			aspectRatio: 1,
 			borderRadius: 50,
 

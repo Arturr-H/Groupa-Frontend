@@ -1,5 +1,5 @@
 import { text as styles } from "../../Style";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import React from "react";
 
 const H1 = ({ children, ...props }) => (
@@ -9,7 +9,7 @@ const H1 = ({ children, ...props }) => (
 );
 
 const H2 = ({ children, ...props }) => (
-    <Text style={styles.h2} {...props}>
+    <Text numberOfLines={1} style={styles.h2} {...props}>
         {children}
     </Text>
 );
@@ -20,10 +20,15 @@ const P = ({ children, ...props }) => (
     </Text>
 );
 
+const HR = ({ children, ...props }) => (
+    <View style={[styles.hr, props.margin ?
+        { marginBottom: "auto" } : { marginVertical: 10 }]} {...props} />
+);
+
 const BIGTEXT = ({ children, ...props }) => (
     <Text style={styles.bigtext} {...props}>
         {children}
     </Text>
 );
 
-export { H1, H2, BIGTEXT, P }
+export { H1, H2, BIGTEXT, P, HR };

@@ -1,4 +1,4 @@
-import { input as styles } from "../../Style";
+import { input as styles, stylevar } from "../../Style";
 import { TouchableOpacity, Text, Image } from "react-native";
 import React from "react";
 import { Haptic } from "../../func/Haptic";
@@ -6,20 +6,22 @@ import { Haptic } from "../../func/Haptic";
 class Button extends React.PureComponent {
     constructor(props) {
         super(props);
+
+        this.is_hollow = this.props.hollow;
     }
        
     /*- Render the button -*/
     render() {
         return (
             <TouchableOpacity
-                style                = {styles.submitInput}
+                style                = {[styles.submitInput, this.props.style || {}, this.is_hollow ? styles.hollowButton : {}]}
                 onPress              = {() => {
                     this.props.onPress();
                     Haptic("medium");
                 }}
                 activeOpacity	     = {0.8}
             >
-                <Text style={styles.submitInputText}>{this.props.children}</Text>
+                <Text style={[styles.submitInputText, this.is_hollow ? { color: stylevar.colors.main } : {}]}>{this.props.children}</Text>
             </TouchableOpacity>
         );
     }

@@ -21,6 +21,7 @@ class Modal extends React.PureComponent {
             },
             drag: new Animated.ValueXY(center),
             modalRotation: new Animated.Value(0),
+            modalInteractable: true,
         };
 
         /*- Modal intro start animation y-value -*/
@@ -63,9 +64,18 @@ class Modal extends React.PureComponent {
                         this.disable();
                     });
                 }else {
+
+                    /*- If the user drags the modal mid-animation,
+                        it looks kinda funky and we don't want that -*/
+                    this.setState({ modalInteractable: false });
+
                     /*- Animate the modal back to the center -*/
-                    this.state.drag.setValue(center);
-                    this.animate(this.state.modalRotation, 0);
+                    this.animate(this.state.drag, center, 1000, () => {
+                        this.state.drag.setValue(center);
+                        this.setState({ modalInteractable: true });
+                    });
+
+                    this.animate(this.state.modalRotation, -(Math.PI / 2) * 4, 1000);
                 }
             },
             onPanResponderRelease: () => {
@@ -117,19 +127,10 @@ class Modal extends React.PureComponent {
         this.enable();
     };
 
-    /*- Before component is scrapped -*/
-    // componentWillUnmount() {
-    //     this.disable();
-    // };
-
-
-
     render() {
         return (
-            <Animated.View style={[styles.modalContainer, {
+            <Animated.View pointerEvents={this.state.modalInteractable ? "auto" : "none"} style={[styles.modalContainer, {
                 transform: [
-                    // { translateX: -width*0.4 },
-                    // { translateY: this.modalY }
                     { translateX: this.state.drag.x },
                     { translateY: this.state.drag.y },
                     { rotate: this.state.modalRotation },

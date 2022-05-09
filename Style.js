@@ -21,6 +21,9 @@ const stylevar = {
 
 		fg: "#fff",
 		fg_second: "rgb(245, 245, 245)"
+	},
+	toast: {
+		height: 60,
 	}
 }
 /*- Default styles -*/
@@ -263,7 +266,7 @@ const styles = {
 			bottom: 0,
 
 			width: "80%",
-			height: 60,
+			height: stylevar.toast.height,
 			position: "absolute",
 			zIndex: 10,
 
@@ -271,23 +274,33 @@ const styles = {
 			flexDirection: "row",
 			justifyContent: "space-between",
 			alignItems: "center",
-		},
-		toast: {
-			backgroundColor: stylevar.colors.secondary,
-			borderRadius: 10,
-			padding: 10,
-			paddingHorizontal: 20,
 
+			borderRadius: 10,
+			overflow: "hidden",
+
+			borderColor: stylevar.border.thick,
+			borderWidth: 1,
+		},
+		toastContainer: {
 			width: "100%",
 			height: 60,
 			zIndex: 10,
+			borderRadius: 10,
+
+			...Default.shadow,
+		},
+		toast: {
+			padding: 10,
+			paddingHorizontal: 20,
+			borderRadius: 10,
+
+			width: "100%",
+			height: "100%",
 
 			display: "flex",
 			flexDirection: "row",
 			justifyContent: "space-between",
 			alignItems: "center",
-
-			...Default.shadow,
 		},
 		toastText: {
 			flexShrink: 1,

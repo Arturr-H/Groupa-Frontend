@@ -5,6 +5,7 @@ import { TopNav } from "../../components/molecules/TopNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StartButton } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
+import { Modal } from "../../components/molecules/Modal";
 
 const styles = style.home; /*- Home styles lies here -*/
 

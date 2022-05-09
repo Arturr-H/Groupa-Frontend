@@ -1,11 +1,14 @@
 import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, TouchableOpacity, Text, Image } from "react-native";
-import { chat as styles, stylevar } from "../../Style";
+import { def, styles as style, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import { BackButton, P } from "../../components/AtomBundle";
+import { BackButton, P, Toast } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { LinearGradient } from "expo-linear-gradient";
 import { Modal } from "../../components/molecules/Modal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const styles = style.chat; /*- Home styles lies here -*/
 
 /*- Map every message to this -*/
 class ChatMessage extends React.PureComponent {
@@ -185,7 +188,7 @@ class Chat extends React.PureComponent {
 		const suid = userObj.owner;
 
 		/*- The users profile-data -*/
-		const data = this.userCache[suid].data;
+		const data = this.userCache[suid] && this.userCache[suid].data || {};
 
 		/*- Set the modal data -*/
 		this.setState({
@@ -280,6 +283,38 @@ class Chat extends React.PureComponent {
 		this.client.close();
 		this.props.navigation.navigate("Home");
 	}
+
+	/*- Friend adding -*/
+	async addFriend(suid) {
+		/*- The suid is needed to make a friend request because of security reasons -*/
+		const self_suid = await AsyncStorage.getItem("suid");
+
+		/*- Make the ACTUAL friend request -*/
+		await fetch(this._server_cdn + "/api/add-friend", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				suid, // Okay, the suid is the person that is GETTING the friend request, not sending
+				friend: self_suid, // The current user that wants to be friends with the other user
+			},
+		}).then(res => {
+			if (res.status === 200) {
+				/*- Send a ws message to the other user that they've been added -*/
+				this.client.send(JSON.stringify({
+					type: "friend",
+					data: {
+						friend: suid,
+						roomid: this.roomid,
+						suid: this.suid,
+					},
+				}));
+
+				this.makeNotice("Friend request sent!");
+			} else {
+				this.makeNotice("Something went wrong...");
+			}
+		});
+	};
 	
 	/*- Before render -*/
 	componentDidMount() {
@@ -312,6 +347,21 @@ class Chat extends React.PureComponent {
 					time: get_hh_mm(),
 					type: "system",
 				});
+			}else if (response_type === "friend") {
+				const { friend, suid } = response.data;
+
+				/*- The "adders" name -*/
+				const adder = this.userCache[suid].data.username;
+
+				/*- Check if the current user was the one who was added -*/
+				if (friend == this.suid) {
+					this.addMessage({
+						text: `${adder} sent you a friend request!`,
+						sender: "",
+						time: get_hh_mm(),
+						type: "system",
+					});
+				}
 			}
 		};
 
@@ -327,7 +377,7 @@ class Chat extends React.PureComponent {
 
 	render() {
 		return (
-			<React.Fragment>
+			<View style={def.container}>
 
 				{/*- Top gradient-overlay -*/}
 				<LinearGradient
@@ -339,6 +389,8 @@ class Chat extends React.PureComponent {
 
 					{/*- All messages here -*/}
 					<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
+					<ChatMessage onProfilePress={() => this.showModal({username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
+						
 						{this.state.messages.map((obj, index) => {
 							/*- If the message comes from the system like when someone leaves -*/
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
@@ -377,9 +429,11 @@ class Chat extends React.PureComponent {
 						this.setState({
 							modalEnabled: false,
 						});
-					}} />	
+					}} onAddFriend={(suid) => this.addFriend(suid)} />	
 				}
-			</React.Fragment>
+
+				{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
+			</View>
 		);
 	}
 };

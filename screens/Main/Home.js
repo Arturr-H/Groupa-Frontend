@@ -1,10 +1,12 @@
 import React from "react";
 import { View, ScrollView, Image, Text, RefreshControl, TouchableHighlight } from "react-native";
-import { home as styles, def, stylevar } from "../../Style";
+import { styles as style, def, stylevar } from "../../Style";
 import { TopNav } from "../../components/molecules/TopNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StartButton } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
+
+const styles = style.home; /*- Home styles lies here -*/
 
 /*- This class takes the friends-suids as an input,
 	makes a request to get the friends data -*/

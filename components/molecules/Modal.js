@@ -1,11 +1,12 @@
 import React from "react";
 import { View, Animated, Easing } from "react-native";
-import { input as styles, width, height } from "../../Style";
+import { styles as style, width, height } from "../../Style";
 import { BlurView } from "expo-blur"
 import { AccountBubble, Button, H2, P, HR } from "../AtomBundle";
+const styles = style.input; // Modal styles lies here
 
 const MODAL_START_Y = -100;
-const MODAL_DURATION = 750;
+const MODAL_DURATION = 500;
 
 class Modal extends React.PureComponent {
     constructor(props) {
@@ -88,7 +89,7 @@ class Modal extends React.PureComponent {
                     <HR />
 
 
-                    <Button style={{ marginBottom: 10 }}>Add friend</Button>
+                    <Button style={{ marginBottom: 10 }} onPress={() => this.props.onAddFriend(this.state.userData.suid)}>Add friend</Button>
                     <Button hollow={true} style={{ marginBottom: 0 }} onPress={() => {
                         this.disable();
 

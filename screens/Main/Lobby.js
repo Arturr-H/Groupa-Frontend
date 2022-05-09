@@ -1,10 +1,11 @@
 import { View, Image, ActivityIndicator, Text } from "react-native";
-import { def as styles, lobby, chat } from "../../Style";
+import { def, styles as style } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
+const styles = { ...style.lobby, ...style.chat } /*- Lobby styles lies here -*/
 
 /*- The websocket client -*/
 const MAX_USERS = 2;
@@ -45,9 +46,9 @@ class UserPfp extends React.PureComponent {
 				<Image
 					key={this.index}
 					source={{ uri: this.userData.profile }}
-					style={lobby.lobbyProfileImage}
+					style={styles.lobbyProfileImage}
 				/>
-				<Text style={[chat.chatMessageUserText, { textAlign:"center" }]}>{
+				<Text style={[styles.chatMessageUserText, { textAlign:"center" }]}>{
 					this.props.suid === this.userData.suid
 						? "You"
 						: this.username(this.userData.username)
@@ -90,7 +91,7 @@ class Lobby extends React.PureComponent {
 	_server_handler = new ServerHandler();
 	_server_url     = this._server_handler.get_url();
 	_server_cdn     = this._server_handler.get_cdn();
-	
+
 	/*- The websocket client -*/
 	client = new W3CWebSocket(this._server_url);
 
@@ -338,7 +339,7 @@ class Lobby extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<View style={styles.container}>
+			<View style={def.container}>
 				{
 					(
 						/*- If the room was found and the join request was succesfully sent -*/
@@ -355,7 +356,7 @@ class Lobby extends React.PureComponent {
 						<BIGTEXT>{this.state.users && this.state.users.length}/{MAX_USERS}</BIGTEXT>
 
 						{/*- Display the users -*/}
-						<View style={lobby.lobbyProfileContainer}>
+						<View style={styles.lobbyProfileContainer}>
 							{this.state.UserCache && Object.keys(this.state.UserCache).map((key) => {
 								const userData = this.state.UserCache[key];
 								return (

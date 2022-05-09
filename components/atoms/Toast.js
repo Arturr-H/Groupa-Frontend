@@ -1,7 +1,9 @@
 import React from "react";
 import { TouchableOpacity, Text, Animated, Easing } from "react-native";
-import { toast as styles } from "../../Style";
+import { styles as style } from "../../Style";
 import { Haptic } from "../../func/Haptic";
+const styles = style.toast; /*- Toast styles lies here -*/
+
 let toast_timeout = null;
 
 /*- A toast which appears from the bottom of the screen -*/

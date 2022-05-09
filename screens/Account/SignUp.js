@@ -2,10 +2,11 @@
 
 import React from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TextInput, KeyboardAvoidingView, TouchableOpacity, Text, Image, ActivityIndicator } from "react-native";
+import { View, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { register as styles, input } from "../../Style";
+import { styles as style } from "../../Style";
 import { Button } from "../../components/atoms/Button";
+const styles = { ...style.register, ...style.input } /*- Register styles lies here -*/
 
 /*- Backend / Account api URL -*/
 const URL = "https://artur.red/api/";
@@ -118,7 +119,7 @@ export default class SignUp extends React.PureComponent {
 				<View style={styles.bottomViewLarge}>
 					{/*- Username input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Name..."}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"username"}
@@ -135,7 +136,7 @@ export default class SignUp extends React.PureComponent {
 
 					{/*- Displayname input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Displayname..."}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"name"}
@@ -152,7 +153,7 @@ export default class SignUp extends React.PureComponent {
 					
 					{/*- Email input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Email..."}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"email"}
@@ -169,7 +170,7 @@ export default class SignUp extends React.PureComponent {
 
 					{/*- Password input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Password..."}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"password"}

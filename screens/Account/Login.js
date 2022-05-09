@@ -4,8 +4,9 @@ import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, TextInput, KeyboardAvoidingView, Keyboard, Image, ActivityIndicator } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { register as styles, input } from "../../Style";
+import { styles as style, input } from "../../Style";
 import { Button } from "../../components/atoms/Button";
+const styles = { ...style.register, ...style.input } /*- Register styles lies here -*/
 
 /*- Backend / Account api URL -*/
 const URL = "https://artur.red/api/";
@@ -107,7 +108,7 @@ export default class Login extends React.PureComponent {
 				<View style={styles.bottomView}>
 					{/*- Email input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Email"}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"email"}
@@ -124,7 +125,7 @@ export default class Login extends React.PureComponent {
 
 					{/*- Password input -*/}
 					<TextInput
-						style                = {input.input}
+						style                = {styles.input}
 						placeholder          = {"Password"}
 						autoCapitalize       = {"none"}
 						autoComplete         = {"password"}

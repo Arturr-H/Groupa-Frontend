@@ -1,6 +1,7 @@
-import { text as styles } from "../../Style";
+import { styles as style } from "../../Style";
 import { Text, View } from "react-native";
 import React from "react";
+const styles = style.text; /*- Text styles lies here -*/
 
 const H1 = ({ children, ...props }) => (
     <Text style={styles.h1} {...props}>

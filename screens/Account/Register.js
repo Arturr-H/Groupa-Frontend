@@ -3,8 +3,9 @@
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, KeyboardAvoidingView, Image } from "react-native";
-import { register as styles } from "../../Style";
+import { styles as style } from "../../Style";
 import { Button } from "../../components/atoms/Button";
+const styles = style.register /*- Register styles lies here -*/
 
 export default class Register extends React.PureComponent {
 

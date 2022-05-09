@@ -1,7 +1,8 @@
-import { input as styles, stylevar } from "../../Style";
+import { styles as style, stylevar } from "../../Style";
 import { TouchableOpacity, Text, Image } from "react-native";
 import React from "react";
 import { Haptic } from "../../func/Haptic";
+const styles = style.input; /*- Input styles lies here -*/
 
 class Button extends React.PureComponent {
     constructor(props) {

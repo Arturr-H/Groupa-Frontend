@@ -44,7 +44,7 @@ const Default = {
 const REM = (num) => num * 16;
 
 /*- Default styles here -*/
-const defaults = StyleSheet.create({
+const def = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "#fff",
@@ -83,7 +83,7 @@ const defaults = StyleSheet.create({
 /*- All other styles go here -*/
 const styles = {
 	register: StyleSheet.create({
-		...defaults,
+		...def,
 
 		bottomView: {
 			backgroundColor: "#fff",
@@ -577,9 +577,9 @@ const styles = {
 	}),
 };
 
-module.exports = {
-	...styles,
-	def: defaults,
+export {
+	styles,
+	def,
 	stylevar,
 	Default,
 	height, width,

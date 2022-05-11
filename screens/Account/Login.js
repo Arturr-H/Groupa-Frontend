@@ -101,7 +101,7 @@ export default class Login extends React.PureComponent {
 		return (
 			<KeyboardAvoidingView behavior="padding" style={styles.accountContainer}>
 				<View style={styles.logoContainer}>
-					<Image source={require("../../assets/icon.png")} style={styles.logo} />
+					<Image source={require("../../assets/images/icon.png")} style={styles.logo} />
 				</View>
 
 				{/*- Dodge the built-in keyboard -*/}

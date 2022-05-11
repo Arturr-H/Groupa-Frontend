@@ -18,7 +18,7 @@ export default class Register extends React.PureComponent {
 		return (
 			<View style={styles.accountContainer}>
 				<View style={styles.logoContainer}>
-					<Image source={require("../../assets/icon.png")} style={styles.logo} />
+					<Image source={require("../../assets/images/icon.png")} style={styles.logo} />
 				</View>
 
 				<KeyboardAvoidingView behavior="position" style={styles.bottomView}>

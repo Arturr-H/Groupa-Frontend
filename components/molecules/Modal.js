@@ -8,6 +8,7 @@ const styles = style.input; // Modal styles lies here
 
 const MODAL_START_Y = -100;
 const MODAL_DURATION = 500;
+const VELOCITY_MIN = 1.3;
 
 const center = { x: -width*0.4, y: -height*0.3 };
 
@@ -62,7 +63,7 @@ class Modal extends React.PureComponent {
                 this.state.modalRotation.flattenOffset();
 
                 /*- If the velocity is high enough -*/
-                if (Math.abs(vx) > 2 || Math.abs(vy) > 2) {
+                if (Math.abs(vx) > VELOCITY_MIN || Math.abs(vy) > VELOCITY_MIN) {
                     /*- Animate the modal moving to the direction -*/
                     this.animate(this.state.drag, { x: -dx*-4, y: -dy*-4 }, 900);
                     this.animate(this.modalO, 0, 900, () => {

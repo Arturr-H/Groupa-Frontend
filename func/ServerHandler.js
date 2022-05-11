@@ -1,7 +1,7 @@
 /*- Server urls -*/
 export class ServerHandler {
     constructor() {
-        this.url = "http://192.168.68.112:8082";
+        this.url = "https://wss.artur.red";//192.168.68.112:8082
         this.cdn = "https://artur.red";
     }
 

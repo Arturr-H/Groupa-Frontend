@@ -58,7 +58,7 @@ class UserPfp extends React.PureComponent {
 					});
 				}
 			},
-			onPanResponderRelease: (event, gesture) => {
+			onPanResponderRelease: () => {
 				this.state.drag.flattenOffset();
 				this.animate(this.state.drag, { x: 0, y: 0 }, 500);
 				this.setState({ dragging: false });

@@ -15,12 +15,13 @@ const stylevar = {
 		white: "#fff",
 	},
 	colors: {
-		main: "#fc6b68",
+		main: "#fc5e5a",
 		main_inactive: "#a1a1a1",
 		secondary: "#8798dc",
 
 		fg: "#fff",
-		fg_second: "rgb(245, 245, 245)"
+		fg_second: "rgb(245, 245, 245)",
+		fg_transparent: "rgba(230, 230, 230, 0.5)",
 	},
 	toast: {
 		height: 60,
@@ -303,7 +304,7 @@ const styles = {
 			alignItems: "center",
 		},
 		toastText: {
-			flexShrink: 1,
+			width: "100%",
 			color: "#fff",
 			fontWeight: "bold",
 			fontSize: 18,
@@ -586,6 +587,19 @@ const styles = {
 				alignItems: "center",
 
 			textAlign: "center",
+			borderRadius: 5,
+		},
+
+		kickUserButton: {
+			position: "absolute",
+			top: 100,
+			
+			left: width/2 - 40,
+			width: 80,
+			height: 90,
+			borderRadius: 80,
+
+			backgroundColor: stylevar.colors.main,
 		},
 	}),
 };

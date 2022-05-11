@@ -9,7 +9,7 @@ const styles = style.toast; /*- Toast styles lies here -*/
 let toast_timeout = null;
 
 /*- A toast which appears from the bottom of the screen -*/
-export const Toast = ({ text, duration = 3000 }) => {
+export const Toast = ({ text, duration = 3000, onClose }) => {
     /*- The animation value -*/
     const [animation] = React.useState(new Animated.Value(0));
 
@@ -29,6 +29,7 @@ export const Toast = ({ text, duration = 3000 }) => {
         animate(1);
         toast_timeout = setTimeout(() => {
             animate(0);
+            if(onClose) onClose();
         }, duration);
     }, []);
 
@@ -56,8 +57,9 @@ export const Toast = ({ text, duration = 3000 }) => {
                 <BlurView
                     tint="light"
                     style={styles.toast}
+                    intensity={50}
                 >
-                    <Text style={styles.toastText}>{text}</Text>
+                    <Text style={styles.toastText} numberOfLines={1}>{text}</Text>
                 </BlurView>
             </TouchableOpacity>
         </Animated.View>

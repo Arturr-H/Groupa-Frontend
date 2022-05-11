@@ -159,6 +159,8 @@ export default class Home extends React.PureComponent {
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Hej</StartButton>
+
+				<Modal onClose={() => {console.log("clso")}} />
 			</View>
 		);
 	}

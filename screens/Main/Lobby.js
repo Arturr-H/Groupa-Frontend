@@ -1,10 +1,11 @@
-import { View, Image, ActivityIndicator, Text } from "react-native";
-import { def, styles as style } from "../../Style";
+import { View, Image, ActivityIndicator, Text, PanResponder, Animated, Easing } from "react-native";
+import { def, styles as style, width, height, stylevar } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
+import { Haptic } from "../../func/Haptic";
 const styles = { ...style.lobby, ...style.chat } /*- Lobby styles lies here -*/
 
 /*- The websocket client -*/
@@ -16,7 +17,7 @@ const MAX_POLLING = 5;
 
 // TODO: Make a cache map for every SUID - to avoid unnecessary requests
 
-
+/*- The user that will be joining -*/
 class UserPfp extends React.PureComponent {
 	constructor(props) {
 		super(props);
@@ -24,10 +25,63 @@ class UserPfp extends React.PureComponent {
 		this.suid = this.props.user;
 		this.index = this.props.index;
 		this.userData = this.props.userData.data;
+		this.onKickStateChange = this.props.onKickStateChange;
+
+		/*- Changeable -*/
+		this.state = {
+			drag: new Animated.ValueXY(),
+			drag_enabled: true,
+			dragging: false,
+		};
 
 		/*- Bind -*/
 		this.username = this.username.bind(this);
+		this.animate = this.animate.bind(this);
+
+		this.center = { y: -height*0.8 };
+
+		/*- Pan responder -*/
+		this.panResponder = PanResponder.create({
+			onStartShouldSetPanResponder: () => true,
+			onPanResponderMove: (_, gesture) => {
+				if (this.state.drag_enabled) {
+					this.state.drag.setValue({ x: gesture.dx, y: gesture.dy });
+
+
+					/*- Get the distance from the center and change the rotation speed accordingly -*/
+					const distance_from_center_y = Math.abs(350 + this.center.y - gesture.dy);
+					const distance_from_center_x = Math.abs(width*0.3 - gesture.dx);
+
+					const distance_from_center = Math.sqrt(Math.pow(distance_from_center_y, 2) + Math.pow(distance_from_center_x, 2));
+					this.onKickStateChange({
+						rotation: distance_from_center,
+					});
+				}
+			},
+			onPanResponderRelease: (event, gesture) => {
+				this.state.drag.flattenOffset();
+				this.animate(this.state.drag, { x: 0, y: 0 }, 500);
+				this.setState({ dragging: false });
+			},
+			onPanResponderGrant: () => {
+				this.setState({ dragging: true });
+			},
+		});
 	}
+
+	/*- Simple animate function to avoid repetitive code [ ugly >:( ]  -*/
+	animate(value, toValue, duration, callback) {
+		Animated.timing(value, {
+			toValue,
+			duration: duration,
+			useNativeDriver: true,
+			easing: Easing.bezier(0.165, 0.84, 0.44, 1.0)
+		}).start();
+
+		setTimeout(() => {
+			if (callback) callback();
+		}, duration);
+	};
 
 	/*- Backend server URL handling -*/
 	_server_handler = new ServerHandler();
@@ -42,7 +96,15 @@ class UserPfp extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<View style={styles.lobbyPfpContainer}>
+			<Animated.View style={[styles.lobbyPfpContainer, {
+				transform: [
+					{ translateX: this.state.drag.x },
+					{ translateY: this.state.drag.y },
+				],
+				backgroundColor: this.state.dragging ? stylevar.colors.fg_transparent : null,
+			}]}
+				{...this.panResponder.panHandlers}
+			>
 				<Image
 					key={this.index}
 					source={{ uri: this.userData.profile }}
@@ -53,7 +115,60 @@ class UserPfp extends React.PureComponent {
 						? "You"
 						: this.username(this.userData.username)
 				}</Text>
-			</View>
+			</Animated.View>
+		);
+	};
+};
+
+/*- Kick user circle -*/
+class KickUser extends React.PureComponent {
+	constructor(props) {
+		super(props);
+		
+		/*- Changeable -*/
+		this.state = {
+			rotation: new Animated.Value(0),
+			scale: new Animated.Value(1),
+			hasBeenVibrated: false,
+		};
+
+		this.rotation = this.props.rotation;
+	};
+
+	/*- Rotate -*/
+	componentDidUpdate() {
+		this.rotation = this.props.rotation;
+
+		/*- The rotation is also the distance from the KickUserButton -*/
+		if (this.rotation < 50) {
+			this.state.scale.setValue(1.2);
+
+			/*- Vibrate if the user hasn't been vibrated yet -*/
+			if (!this.state.hasBeenVibrated) {
+				Haptic("heavy");
+				this.setState({ hasBeenVibrated: true });
+			}
+		}else {
+			this.state.scale.setValue(1);
+
+			/*- Stop vibrating -*/
+			if (this.state.hasBeenVibrated) {
+				Haptic("medium");
+				this.setState({ hasBeenVibrated: false });
+			}
+		}
+		this.state.rotation.setValue(this.rotation / 50);
+	};
+
+	/*- Render -*/
+	render() {
+		return (
+			<Animated.View style={[styles.kickUserButton, {
+				transform: [
+					{ rotate: this.state.rotation },
+					{ scale: this.state.scale },
+				]
+			}]}></Animated.View>
 		);
 	};
 };
@@ -75,6 +190,11 @@ class Lobby extends React.PureComponent {
 			roomid: "",
 			suid: "",
 
+			kickUserButton: {
+				rotating: false,
+				rotation: 10000,
+			},
+
 			connectStaus: "Finding room...",
 			connectStausCode: 400,
 		}
@@ -85,6 +205,7 @@ class Lobby extends React.PureComponent {
 		this.start_room = this.start_room.bind(this);
 		this.update_usercache = this.update_usercache.bind(this);
 		this.GetUserVal = this.GetUserVal.bind(this);
+		this.onKickStateChange = this.onKickStateChange.bind(this);
 	}
 
 	/*- Backend server URL handling -*/
@@ -152,10 +273,12 @@ class Lobby extends React.PureComponent {
 	}
 
 	/*- Update the user cache on demand -*/
-	update_usercache = async (users) => {
+	update_usercache = async (users, callback) => {
 
 		/*- Loop through every user and check if it's in the map -*/
-		users.forEach(user => {
+		users.forEach((user, index) => {
+			const is_last = index === users.length - 1;
+
 			/*- If we can't find the suid key -*/
 			if (!this.state.UserCache[user]) {
 				/*- Add it to the map -*/
@@ -172,11 +295,26 @@ class Lobby extends React.PureComponent {
 							...this.state.UserCache,
 							[user]: data,
 						},
+					}, () => {
+						if (is_last && callback) callback();
 					});
 				});
 			};
 		});
 	};
+
+	/*- When the kick button gets a state change like rotation or scale -*/
+	onKickStateChange = (e) => {
+		const { rotation } = e;
+
+		/*- Change the state -*/
+		this.setState({
+			kickUserButton: {
+				...this.state.kickUserButton,
+				rotation: rotation,
+			},
+		});
+	}
 
 	/*- On mount -*/
 	componentDidMount = () => {
@@ -216,8 +354,6 @@ class Lobby extends React.PureComponent {
 			const request_backend = async (n) => {
 
 				if (!this._is_mounted) return;
-
-				console.log(`${this._server_url}/api/join-room`);
 
 				/*- Try find a room -*/
 				await fetch(`${this._server_url}/api/join-room`, {
@@ -293,13 +429,16 @@ class Lobby extends React.PureComponent {
 			const response_type = response.type;
 
 			if (response_type === "join-room") {
+				const suid = response.data.new_user;
+
 				/*- Update the userlist -*/
 				if(this._is_mounted) this.setState({ users: response.data.user_list }, () => {
-					this.update_usercache(this.state.users);
+					this.update_usercache(this.state.users, () => {
+						/*- Notify all users -*/
+						if(this._is_mounted) this.make_notice(`${this.state.UserCache[suid].data.username} joined the room.`);
+					});
 				});
 				
-				/*- Notify all users -*/
-				if(this._is_mounted) this.make_notice(`User {${response.data.new_user}} joined!`);
 
 			}else if (response_type === "start") {
 
@@ -340,6 +479,7 @@ class Lobby extends React.PureComponent {
 	render() {
 		return (
 			<View style={def.container}>
+				<KickUser rotation={this.state.kickUserButton.rotation} />
 				{
 					(
 						/*- If the room was found and the join request was succesfully sent -*/
@@ -364,6 +504,7 @@ class Lobby extends React.PureComponent {
 										key={key}
 										userData={userData}
 										suid={this.state.suid}
+										onKickStateChange={this.onKickStateChange}
 									/>
 								);
 							})}
@@ -375,7 +516,7 @@ class Lobby extends React.PureComponent {
 							? <StartButton onPress={this.start_room} inactive={this.state.users.length < MIN_USERS}>Start</StartButton> 
 							: <StartButton onPress={this.leave_room}>Cancel</StartButton> 
 						}
-						{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
+						{ this.state.noticeEnabled ? <Toast text={this.state.notice} onClose={() => this.setState({ noticeEnabled: false })} /> : null }
 
 						<BackButton onPress={() => {
 							this.leave_room();

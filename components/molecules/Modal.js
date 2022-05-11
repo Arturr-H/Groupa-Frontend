@@ -3,6 +3,7 @@ import { View, Animated, Easing, PanResponder } from "react-native";
 import { styles as style, width, height } from "../../Style";
 import { BlurView } from "expo-blur"
 import { AccountBubble, Button, H2, P, HR } from "../AtomBundle";
+
 const styles = style.input; // Modal styles lies here
 
 const MODAL_START_Y = -100;
@@ -39,13 +40,16 @@ class Modal extends React.PureComponent {
                 this.state.drag.setValue({ x: 0, y: 0 });
             },
             onPanResponderMove: (_, gesture) => {
-                const { dy, dx } = gesture;
+                const { dy, dx, vx, vy } = gesture;
                 
                 /*- Get the atan2 angle -*/
-                const angle = (Math.atan2(dy, dx) - (Math.PI / 2) * 3);
+                const angle = (Math.atan2(vy*10 + dy, vx*10 + dx) - (Math.PI / 2) * 3);
 
-                /*- Rotate the modal -*/
-                this.animate(this.state.modalRotation, angle, 5);
+                /*- Set the rotation -*/
+                this.state.modalRotation.setValue(angle);
+
+                /*- Set the drag -*/
+                this.state.drag.setValue({ x: dx, y: dy });
 
                 /*- Move the modal -*/
                 this.state.drag.setValue({ x: dx, y: dy });
@@ -55,9 +59,10 @@ class Modal extends React.PureComponent {
 
                 /*- Animate a lauch animation in the velocioysty direction -*/
                 this.state.drag.flattenOffset();
+                this.state.modalRotation.flattenOffset();
 
                 /*- If the velocity is high enough -*/
-                if (Math.abs(vx) > 1 || Math.abs(vy) > 1) {
+                if (Math.abs(vx) > 2 || Math.abs(vy) > 2) {
                     /*- Animate the modal moving to the direction -*/
                     this.animate(this.state.drag, { x: -dx*-4, y: -dy*-4 }, 900);
                     this.animate(this.modalO, 0, 900, () => {
@@ -80,7 +85,7 @@ class Modal extends React.PureComponent {
             },
             onPanResponderRelease: () => {
                 this.state.drag.flattenOffset();
-            }
+            },
         });
     };
 

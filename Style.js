@@ -331,6 +331,8 @@ const styles = {
 			justifyContent: "space-between",
 			alignItems: "center",
 			justifyContent: "center",
+			position: "absolute",
+			bottom: 0,
 		},
 		messageInput: {
 			backgroundColor: stylevar.colors.fg_second,
@@ -376,6 +378,8 @@ const styles = {
 			paddingTop: 20,
 			paddingHorizontal: 20,
 			zIndex: 11,
+
+			paddingBottom: 110,
 		},
 		chatMessageWrapper: {
 			display: "flex",
@@ -568,16 +572,6 @@ const styles = {
 
 			paddingHorizontal: 40,
 		},
-		lobbyProfileImage: {
-			width: 50,
-			height: 50,
-			borderRadius: 50,
-
-			marginHorizontal: 10,
-			marginVertical: 10,
-
-			...Default.border,
-		},
 
 		lobbyPfpContainer: {
 			display: "flex",
@@ -588,6 +582,20 @@ const styles = {
 
 			textAlign: "center",
 			borderRadius: 5,
+		},
+		lobbyPfpContainerDraggable: {
+			borderStyle: "dashed",
+			...Default.border,
+		},
+		lobbyProfileImage: {
+			width: 50,
+			height: 50,
+			borderRadius: 50,
+
+			marginHorizontal: 10,
+			marginVertical: 10,
+
+			...Default.border,
 		},
 
 		kickUserButton: {
@@ -600,6 +608,101 @@ const styles = {
 			borderRadius: 80,
 
 			backgroundColor: stylevar.colors.main,
+		},
+	}),
+
+	profile: StyleSheet.create({
+		statContainer: {
+			flexDirection: "row",
+			justifyContent: "space-between",
+				alignItems: "center",
+	
+			paddingHorizontal: 20,
+		},
+		statTextContainer: {
+			flexDirection: "column",
+			justifyContent: "center",
+				alignItems: "center",
+			
+			flex: 1,
+		},
+		statTopText: { fontWeight: "800" },
+		statBottomText: { fontWeight: "300" },
+	
+		searchContainer: {
+			flexDirection: "row",
+			alignItems: "center",
+		},
+		searchBar: {
+			backgroundColor: "rgb(220, 220, 220)",
+			height: 40,
+			borderRadius: 10,
+			paddingHorizontal: 10,
+			paddingLeft: 40,
+	
+			width: "100%",
+	
+			borderColor: "rgb(210, 210, 210)",
+			borderWidth: 1
+		},
+		searchBarIcon: {
+			position: "absolute",
+			zIndex: 3,
+	
+			marginLeft: 10,
+		},
+		contentContainer: {
+			paddingHorizontal: 200,
+			marginHorizontal: 10,
+			flex: 1,
+		},
+		accountImageBig: {
+			width: 90,
+			height: 90,
+	
+			backgroundColor: "rgb(220, 220, 220)",
+			borderRadius: 45,
+	
+			marginRight: 10,
+			zIndex: 0
+		},
+	
+		ownedPostsContainer: {
+			flexDirection: "row",
+			flexWrap: "wrap",
+			alignItems: "center",
+			justifyContent: "space-evenly",
+			paddingHorizontal: 5,
+			paddingVertical: 10,
+		},
+		ownedPost: {
+			width: (width/2)*0.8,
+			height: (width/2)*1.2,
+			borderRadius: 10,
+			backgroundColor: "rgb(220, 220, 220)",
+	
+			borderColor: "rgb(210, 210, 210)",
+			borderWidth: 1,
+			marginVertical: 10,
+	
+			justifyContent: "center",
+				alignItems: "center",		
+		},
+		postTitle: {
+			position: "absolute",
+			bottom: 5,
+			left: 5,
+	
+			textTransform: "capitalize",
+			color: "white",
+		},
+		postImage: {
+			position: "absolute",
+	
+			width: "100%",
+			height: "100%",
+	
+			borderRadius: 10,
 		},
 	}),
 };

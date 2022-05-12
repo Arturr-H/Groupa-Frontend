@@ -151,7 +151,7 @@ export default class Home extends React.PureComponent {
 
 		return (
 			<View style={def.accountContainer}>
-				<TopNav imageURL={this.state.imageURL} />
+				<TopNav imageURL={this.state.imageURL} navigation={navigation} />
 				<ScrollView refreshControl={<RefreshControl refreshing={false} />}>
 					<FriendGetter />
 				</ScrollView>

@@ -1,4 +1,4 @@
-import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, TouchableOpacity, Text, Image } from "react-native";
+import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, TouchableOpacity, Text, Image, Keyboard } from "react-native";
 import { def, styles as style, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -385,10 +385,10 @@ class Chat extends React.PureComponent {
                 	style={styles.gradientOverlay}
                 />
 
-				<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
+				<KeyboardAvoidingView style={styles.chatContainer} behavior="position">
 
 					{/*- All messages here -*/}
-					<ScrollView contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
+					<ScrollView onTouchStart={() => Keyboard.dismiss()} contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
 					<ChatMessage onProfilePress={() => this.showModal({username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
 						
 						{this.state.messages.map((obj, index) => {
@@ -401,7 +401,11 @@ class Chat extends React.PureComponent {
 
 					</ScrollView>
 
-					<View style={styles.messageInputContainer}>
+					<LinearGradient
+						style={styles.messageInputContainer}
+						locations={[0, 0.5]}
+						colors={["rgba(255, 255, 255, 0)", "rgb(255, 255, 255)"]}
+					>
 						<TextInput
 							style={styles.messageInput}
 							placeholder="Send a message..."
@@ -416,7 +420,7 @@ class Chat extends React.PureComponent {
 							onSubmitEditing={this.submitEditing}
 						/>
 						<TouchableHighlight onPress={this.submitEditing} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
-					</View>
+					</LinearGradient>
 
 				</KeyboardAvoidingView>	
 				<BackButton onPress={this.leaveRoom} />

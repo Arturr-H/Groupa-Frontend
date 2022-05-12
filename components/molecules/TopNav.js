@@ -16,7 +16,7 @@ class TopNav extends React.PureComponent {
                     <H1>Friends</H1>
                     <AccountBubble
                         src={this.props.imageURL}
-                        onPress={() => {}}
+                        onPress={() => this.props.navigation.navigate("Profile")}
                     />
                 </View>
 

@@ -26,6 +26,7 @@ class UserPfp extends React.PureComponent {
 		this.index = this.props.index;
 		this.userData = this.props.userData.data;
 		this.onKickStateChange = this.props.onKickStateChange;
+		this.draggable = this.props.draggable;
 
 		/*- Changeable -*/
 		this.state = {
@@ -96,14 +97,15 @@ class UserPfp extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<Animated.View style={[styles.lobbyPfpContainer, {
+			<Animated.View style={[styles.lobbyPfpContainer,
+				this.draggable ? styles.lobbyPfpContainerDraggable : null, {
 				transform: [
 					{ translateX: this.state.drag.x },
 					{ translateY: this.state.drag.y },
 				],
 				backgroundColor: this.state.dragging ? stylevar.colors.fg_transparent : null,
 			}]}
-				{...this.panResponder.panHandlers}
+				{...this.draggable ? {...this.panResponder.panHandlers} : null}
 			>
 				<Image
 					key={this.index}
@@ -505,6 +507,7 @@ class Lobby extends React.PureComponent {
 										userData={userData}
 										suid={this.state.suid}
 										onKickStateChange={this.onKickStateChange}
+										draggable={this.state.isHost && this.state.suid !== key}
 									/>
 								);
 							})}

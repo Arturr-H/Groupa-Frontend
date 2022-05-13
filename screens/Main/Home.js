@@ -188,6 +188,12 @@ export default class Home extends React.PureComponent {
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Join Lobby</StartButton>
+
+				<Modal data={{ adder: "artur" }} onClose={() => {
+						this.setState({
+							modalEnabled: false,
+						});
+					}} onAddFriend={(suid) => this.sendFriendRequest(suid)} type={"profile"} />	
 			</View>
 		);
 	}

@@ -69,6 +69,9 @@ class Modal extends React.PureComponent {
             drag: new Animated.ValueXY(center),
             modalRotation: new Animated.Value(0),
             modalInteractable: true,
+
+            vxmap: Array(8).fill(0),
+            vymap: Array(8).fill(0),
         };
 
         /*- Modal intro start animation y-value -*/
@@ -93,8 +96,20 @@ class Modal extends React.PureComponent {
             onPanResponderMove: (_, gesture) => {
                 const { dy, dx, vx, vy } = gesture;
                 
-                /*- Get the atan2 angle -*/
-                const angle = (Math.atan2(vy*10 + dy, vx*10 + dx) - (Math.PI / 2) * 3);
+                /*- Add the velocities to their responding maps -*/
+                this.state.vxmap.push(vx);
+                this.state.vymap.push(vy);
+
+                /*- Remove the oldest velocity -*/
+                this.state.vxmap.shift();
+                this.state.vymap.shift();
+
+                /*- The angle should point in the direction of the velocity -*/
+                const average = {
+                    vx: this.state.vxmap.reduce((a, b) => a + b, 0) / this.state.vxmap.length,
+                    vy: this.state.vymap.reduce((a, b) => a + b, 0) / this.state.vymap.length,
+                }
+                const angle = Math.atan2(average.vy, average.vx) + Math.PI / 2;
 
                 /*- Set the rotation -*/
                 this.state.modalRotation.setValue(angle);
@@ -204,8 +219,6 @@ class Modal extends React.PureComponent {
 
         this.disable(true);
     };
-
-
 
     /*- Before init -*/
     componentDidMount() {

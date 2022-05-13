@@ -23,14 +23,17 @@ export default class SignUp extends React.PureComponent {
 			displayname: "",
 			email: "",
 			password: "",
+			confirmPassword: "",
 
 			loading: false,
 		};
+
 		/*- Refs for the inputs - useful for auto-selecting the next one in queue -*/
 		this.inputNameRef = React.createRef();
 		this.inputDisplaynameRef = React.createRef();
 		this.inputEmailRef = React.createRef();
 		this.inputPasswordRef = React.createRef();
+		this.inputConfirmPasswordRef = React.createRef();
 
 
 		/*- Bind the functions -*/
@@ -51,6 +54,7 @@ export default class SignUp extends React.PureComponent {
 			displayname: "",
 			email: "",
 			password: "",
+			confirmPassword: "",
 		});
 	}
 
@@ -62,6 +66,7 @@ export default class SignUp extends React.PureComponent {
 		if (this.state.displayname.length == 0) { return alert("Please enter your displayname."); }
 		if (this.state.email.length == 0) { return alert("Please enter your email."); }
 		if (this.state.password.length == 0) { return alert("Please enter your password."); }
+		if (this.state.confirmPassword != this.state.password) { return alert("Your passwords do not match."); }
 
 		/*- Show that the request is being processed -*/
 		this.setState({ loading: true });
@@ -184,6 +189,25 @@ export default class SignUp extends React.PureComponent {
 						ref                  = {this.inputPasswordRef}
 						blurOnSubmit		 = {false}
 					/>
+
+					{/*- Confirm password input -*/}
+					<TextInput
+						style                = {styles.input}
+						placeholder          = {"Confirm password..."}
+						autoCapitalize       = {"none"}
+						autoComplete         = {"password"}
+						autoCorrect          = {false}
+						spellCheck           = {false}
+						keyboardType         = {"default"}
+						returnKeyType        = {"done"}
+						secureTextEntry      = {true}
+						onChangeText         = {(text) => this.setState({ confirmPassword: text })}
+						value                = {this.state.confirmPassword}
+						ref                  = {this.inputConfirmPasswordRef}
+						blurOnSubmit		 = {false}
+					/>
+
+					{}
 
 					<Button onPress={this.signup}>
 						{

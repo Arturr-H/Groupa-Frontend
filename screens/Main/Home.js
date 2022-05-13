@@ -158,7 +158,7 @@ export default class Home extends React.PureComponent {
 
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
-				>Hej</StartButton>
+				>Join Lobby</StartButton>
 
 				<Modal onClose={() => {}} />
 			</View>

@@ -1,21 +1,20 @@
-import { View, Image, ActivityIndicator, Text, PanResponder, Animated, Easing } from "react-native";
-import { def, styles as style, width, height, stylevar } from "../../Style";
+import { View, Image, ActivityIndicator, Text, TouchableOpacity, Easing } from "react-native";
+import { def, styles as style, height, stylevar } from "../../Style";
 import React from "react";
-import { BIGTEXT, P, StartButton, Toast, BackButton } from "../../components/AtomBundle";
+import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
-import { Haptic } from "../../func/Haptic";
+import { Modal } from "../../components/molecules/Modal";
+import { BlurView } from "expo-blur";
 const styles = { ...style.lobby, ...style.chat } /*- Lobby styles lies here -*/
 
 /*- The websocket client -*/
-const MAX_USERS = 2;
+const MAX_USERS = 5;
 const MIN_USERS = 1;
 
 /*- How many times the client should try to reconnect if failed -*/
 const MAX_POLLING = 5;
-
-// TODO: Make a cache map for every SUID - to avoid unnecessary requests
 
 /*- The user that will be joining -*/
 class UserPfp extends React.PureComponent {
@@ -25,50 +24,11 @@ class UserPfp extends React.PureComponent {
 		this.suid = this.props.user;
 		this.index = this.props.index;
 		this.userData = this.props.userData.data;
-		this.onKickStateChange = this.props.onKickStateChange;
-		this.draggable = this.props.draggable;
-
-		/*- Changeable -*/
-		this.state = {
-			drag: new Animated.ValueXY(),
-			drag_enabled: true,
-			dragging: false,
-		};
 
 		/*- Bind -*/
 		this.username = this.username.bind(this);
 		this.animate = this.animate.bind(this);
-
-		this.center = { y: -height*0.8 };
-
-		/*- Pan responder -*/
-		this.panResponder = PanResponder.create({
-			onStartShouldSetPanResponder: () => true,
-			onPanResponderMove: (_, gesture) => {
-				if (this.state.drag_enabled) {
-					this.state.drag.setValue({ x: gesture.dx, y: gesture.dy });
-
-
-					/*- Get the distance from the center and change the rotation speed accordingly -*/
-					const distance_from_center_y = Math.abs(350 + this.center.y - gesture.dy);
-					const distance_from_center_x = Math.abs(width*0.3 - gesture.dx);
-
-					const distance_from_center = Math.sqrt(Math.pow(distance_from_center_y, 2) + Math.pow(distance_from_center_x, 2));
-					this.onKickStateChange({
-						rotation: distance_from_center,
-					});
-				}
-			},
-			onPanResponderRelease: () => {
-				this.state.drag.flattenOffset();
-				this.animate(this.state.drag, { x: 0, y: 0 }, 500);
-				this.setState({ dragging: false });
-			},
-			onPanResponderGrant: () => {
-				this.setState({ dragging: true });
-			},
-		});
-	}
+	};
 
 	/*- Simple animate function to avoid repetitive code [ ugly >:( ]  -*/
 	animate(value, toValue, duration, callback) {
@@ -97,80 +57,24 @@ class UserPfp extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<Animated.View style={[styles.lobbyPfpContainer,
-				this.draggable ? styles.lobbyPfpContainerDraggable : null, {
-				transform: [
-					{ translateX: this.state.drag.x },
-					{ translateY: this.state.drag.y },
-				],
-				backgroundColor: this.state.dragging ? stylevar.colors.fg_transparent : null,
-			}]}
-				{...this.draggable ? {...this.panResponder.panHandlers} : null}
+			<TouchableOpacity
+				activeOpacity={0.8}
+				onPress={() => this.props.onClick(this.userData)}
+				style={styles.lobbyPfpWrapper}
 			>
-				<Image
-					key={this.index}
-					source={{ uri: this.userData.profile }}
-					style={styles.lobbyProfileImage}
-				/>
-				<Text style={[styles.chatMessageUserText, { textAlign:"center" }]}>{
-					this.props.suid === this.userData.suid
+				<BlurView style={styles.lobbyPfpContainer} intensity={20}>
+					<Image
+						key={this.index}
+						source={{ uri: this.userData.profile }}
+						style={styles.lobbyProfileImage}
+						/>
+					<Text style={[styles.chatMessageUserText, { textAlign:"center" }]}>{
+						this.props.suid === this.userData.suid
 						? "You"
 						: this.username(this.userData.username)
-				}</Text>
-			</Animated.View>
-		);
-	};
-};
-
-/*- Kick user circle -*/
-class KickUser extends React.PureComponent {
-	constructor(props) {
-		super(props);
-		
-		/*- Changeable -*/
-		this.state = {
-			rotation: new Animated.Value(0),
-			scale: new Animated.Value(1),
-			hasBeenVibrated: false,
-		};
-
-		this.rotation = this.props.rotation;
-	};
-
-	/*- Rotate -*/
-	componentDidUpdate() {
-		this.rotation = this.props.rotation;
-
-		/*- The rotation is also the distance from the KickUserButton -*/
-		if (this.rotation < 50) {
-			this.state.scale.setValue(1.2);
-
-			/*- Vibrate if the user hasn't been vibrated yet -*/
-			if (!this.state.hasBeenVibrated) {
-				Haptic("heavy");
-				this.setState({ hasBeenVibrated: true });
-			}
-		}else {
-			this.state.scale.setValue(1);
-
-			/*- Stop vibrating -*/
-			if (this.state.hasBeenVibrated) {
-				Haptic("medium");
-				this.setState({ hasBeenVibrated: false });
-			}
-		}
-		this.state.rotation.setValue(this.rotation / 50);
-	};
-
-	/*- Render -*/
-	render() {
-		return (
-			<Animated.View style={[styles.kickUserButton, {
-				transform: [
-					{ rotate: this.state.rotation },
-					{ scale: this.state.scale },
-				]
-			}]}></Animated.View>
+					}</Text>
+				</BlurView>
+			</TouchableOpacity>
 		);
 	};
 };
@@ -192,13 +96,11 @@ class Lobby extends React.PureComponent {
 			roomid: "",
 			suid: "",
 
-			kickUserButton: {
-				rotating: false,
-				rotation: 10000,
-			},
-
 			connectStaus: "Finding room...",
 			connectStausCode: 400,
+
+			modalEnabled: false,
+			modalData: {},
 		}
 
 		/*- Binds -*/
@@ -206,8 +108,7 @@ class Lobby extends React.PureComponent {
 		this.leave_room = this.leave_room.bind(this);
 		this.start_room = this.start_room.bind(this);
 		this.update_usercache = this.update_usercache.bind(this);
-		this.GetUserVal = this.GetUserVal.bind(this);
-		this.onKickStateChange = this.onKickStateChange.bind(this);
+		this.showModal = this.showModal.bind(this);
 	}
 
 	/*- Backend server URL handling -*/
@@ -228,15 +129,6 @@ class Lobby extends React.PureComponent {
 			notice,
 			noticeEnabled: true,
 		});
-	}
-
-	/*- UserCache functions -*/
-	GetUserVal = (suid, key) => {
-		try{
-			return this.state.UserCache[suid].data[key];
-		}catch {
-			return null;
-		}
 	}
 
 	/*- When the user wants to leave -*/
@@ -305,16 +197,12 @@ class Lobby extends React.PureComponent {
 		});
 	};
 
-	/*- When the kick button gets a state change like rotation or scale -*/
-	onKickStateChange = (e) => {
-		const { rotation } = e;
-
-		/*- Change the state -*/
+	/*- Modals -*/
+	showModal = (data) => {
+		/*- Set the modal data -*/
 		this.setState({
-			kickUserButton: {
-				...this.state.kickUserButton,
-				rotation: rotation,
-			},
+			modalEnabled: true,
+			modalData: { ...data },
 		});
 	}
 
@@ -481,7 +369,6 @@ class Lobby extends React.PureComponent {
 	render() {
 		return (
 			<View style={def.container}>
-				<KickUser rotation={this.state.kickUserButton.rotation} />
 				{
 					(
 						/*- If the room was found and the join request was succesfully sent -*/
@@ -489,12 +376,6 @@ class Lobby extends React.PureComponent {
 						&& this.state.connectStausCode === 200	
 					) ?
 					<>
-						{/*- Display the games current status -*/}
-						<P>{
-							this.state.users.length >= MAX_USERS
-							? "Waiting for leader to start..."
-							: "Waiting for people to join..."
-						}</P>
 						<BIGTEXT>{this.state.users && this.state.users.length}/{MAX_USERS}</BIGTEXT>
 
 						{/*- Display the users -*/}
@@ -506,8 +387,7 @@ class Lobby extends React.PureComponent {
 										key={key}
 										userData={userData}
 										suid={this.state.suid}
-										onKickStateChange={this.onKickStateChange}
-										draggable={this.state.isHost && this.state.suid !== key}
+										onClick={(e) => this.showModal(e)}
 									/>
 								);
 							})}
@@ -520,10 +400,16 @@ class Lobby extends React.PureComponent {
 							: <StartButton onPress={this.leave_room}>Cancel</StartButton> 
 						}
 						{ this.state.noticeEnabled ? <Toast text={this.state.notice} onClose={() => this.setState({ noticeEnabled: false })} /> : null }
-
-						<BackButton onPress={() => {
-							this.leave_room();
-						}} />
+						{/*- Modal for profile -*/}
+						{
+							this.state.modalEnabled
+							&&
+							<Modal data={this.state.modalData} onClose={() => {
+								this.setState({
+									modalEnabled: false,
+								});
+							}} />	
+						}
 					</>
 					:
 					<>

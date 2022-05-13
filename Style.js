@@ -274,10 +274,14 @@ const styles = {
 			color: stylevar.text.light,
 		},
 		bigtext: {
-			fontSize: REM(4.5),
+			fontSize: width*0.6,
 			fontWeight: "900",
-			color: "rgb(70, 70, 70)",
-			fontFamily: "PoppinsBold"
+			width: width*2,
+			color: "rgb(240, 240, 240)",
+			fontFamily: "PoppinsBold",
+			position: "absolute",
+
+			textAlign: "center",
 		},
 		hr: {
 			width: "100%",
@@ -602,6 +606,12 @@ const styles = {
 			paddingHorizontal: 40,
 		},
 
+		lobbyPfpWrapper: {
+			borderColor: stylevar.border.light,
+			borderWidth: 1,
+			borderRadius: 10,
+			overflow: "hidden",
+		},
 		lobbyPfpContainer: {
 			display: "flex",
 			flexDirection: "column",
@@ -611,10 +621,6 @@ const styles = {
 
 			textAlign: "center",
 			borderRadius: 5,
-		},
-		lobbyPfpContainerDraggable: {
-			borderStyle: "dashed",
-			...Default.border,
 		},
 		lobbyProfileImage: {
 			width: 50,

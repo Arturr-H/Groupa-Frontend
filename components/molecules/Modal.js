@@ -48,10 +48,11 @@ const FriendRequest = (this_) => <>
         <H3>@{this_.props.data.adder} sent you a friend request!</H3>
     </View>
 
+    <HR margin={true} />
     <HR />
-
+    
     <TileButtonContainer style={{ marginBottom: 0 }}>
-        <TileButton pos={"left"} hollow={true} onPress={this_.onDecline}>Decline</TileButton>
+        <TileButton pos={"left"} hollow={true} onPress={() => this_.disable(true)}>Decline</TileButton>
         <TileButton pos={"right"} color={stylevar.colors.green} hollow={false} onPress={() => this_.onAccept()}>Accept</TileButton>
     </TileButtonContainer>
 </>
@@ -203,6 +204,8 @@ class Modal extends React.PureComponent {
 
         this.disable(true);
     };
+
+
 
     /*- Before init -*/
     componentDidMount() {

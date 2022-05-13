@@ -198,12 +198,12 @@ const styles = {
 
 		modalContainer: {
 			position: "absolute",
-
 			width: width*0.8,
+			height: height*0.5,
 
 			left: "50%",
-			top: "50%",
-			transform: [{ translateX: -width*0.4 }, { translateY: -height*0.4 }],
+			top: height*0.5,
+			transform: [{ translateX: -width*0.4 }],
 			opacity: 0,
 
 			borderRadius: 10,

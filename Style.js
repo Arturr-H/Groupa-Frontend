@@ -18,6 +18,7 @@ const stylevar = {
 		main: "#fc5e5a",
 		main_inactive: "#a1a1a1",
 		secondary: "#8798dc",
+		green: "#2fd687",
 
 		fg: "#fff",
 		fg_second: "rgb(245, 245, 245)",
@@ -199,11 +200,10 @@ const styles = {
 			position: "absolute",
 
 			width: width*0.8,
-			height: height*0.6,
 
 			left: "50%",
 			top: "50%",
-			transform: [{ translateX: -width*0.4 }, { translateY: -height*0.3 }],
+			transform: [{ translateX: -width*0.4 }, { translateY: -height*0.4 }],
 			opacity: 0,
 
 			borderRadius: 10,
@@ -267,6 +267,13 @@ const styles = {
 			fontSize: REM(1.8),
 			fontWeight: "bold",
 			color: stylevar.text.default,
+		},
+		h3: {
+			fontSize: REM(1.4),
+			fontWeight: "bold",
+			color: stylevar.text.default,
+			textAlign: "center",
+			width: "100%",
 		},
 		p: {
 			fontSize: REM(1),
@@ -611,6 +618,8 @@ const styles = {
 			borderWidth: 1,
 			borderRadius: 10,
 			overflow: "hidden",
+
+			marginBottom: 20,
 		},
 		lobbyPfpContainer: {
 			display: "flex",

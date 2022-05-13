@@ -54,6 +54,15 @@ class UserPfp extends React.PureComponent {
 		return `@${n}`;
 	}
 
+	/*- A safe way of getting data from the userData map without errors -*/
+	get(key) {
+		if (this.userData && this.userData[key]) {
+			return this.userData[key];
+		} else {
+			return "";
+		};
+	}
+
 	/*- Render -*/
 	render() {
 		return (
@@ -65,13 +74,13 @@ class UserPfp extends React.PureComponent {
 				<BlurView style={styles.lobbyPfpContainer} intensity={20}>
 					<Image
 						key={this.index}
-						source={{ uri: this.userData.profile }}
+						source={{ uri: this.get("profile") }}
 						style={styles.lobbyProfileImage}
 						/>
 					<Text style={[styles.chatMessageUserText, { textAlign:"center" }]}>{
-						this.props.suid === this.userData.suid
+						this.props.suid === this.get("suid")
 						? "You"
-						: this.username(this.userData.username)
+						: this.username(this.get("username"))
 					}</Text>
 				</BlurView>
 			</TouchableOpacity>
@@ -101,6 +110,7 @@ class Lobby extends React.PureComponent {
 
 			modalEnabled: false,
 			modalData: {},
+			modalType: "",
 		}
 
 		/*- Binds -*/
@@ -184,6 +194,8 @@ class Lobby extends React.PureComponent {
 						suid: user,
 					},
 				}).then(res => res.json()).then(data => {
+					if (data.status != 200) { return; };
+
 					this.setState({
 						UserCache: {
 							...this.state.UserCache,
@@ -198,11 +210,12 @@ class Lobby extends React.PureComponent {
 	};
 
 	/*- Modals -*/
-	showModal = (data) => {
+	showModal = (type, data) => {
 		/*- Set the modal data -*/
 		this.setState({
 			modalEnabled: true,
 			modalData: { ...data },
+			modalType: type,
 		});
 	}
 
@@ -303,7 +316,6 @@ class Lobby extends React.PureComponent {
 						}
 					}));
 				}else {
-					console.log("Client not ready." + n);
 					setTimeout(() => {
 						wss_connect(n-1);
 					}, 500);
@@ -324,8 +336,8 @@ class Lobby extends React.PureComponent {
 				/*- Update the userlist -*/
 				if(this._is_mounted) this.setState({ users: response.data.user_list }, () => {
 					this.update_usercache(this.state.users, () => {
-						/*- Notify all users -*/
-						if(this._is_mounted) this.make_notice(`${this.state.UserCache[suid].data.username} joined the room.`);
+						/*- Notify all users (not yourself) -*/
+						if(this._is_mounted && suid != this.state.suid) this.make_notice(`${this.state.UserCache[suid].data.username} joined the room.`);
 					});
 				});
 				
@@ -387,7 +399,7 @@ class Lobby extends React.PureComponent {
 										key={key}
 										userData={userData}
 										suid={this.state.suid}
-										onClick={(e) => this.showModal(e)}
+										onClick={(e) => this.showModal("profile", e)}
 									/>
 								);
 							})}

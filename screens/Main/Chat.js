@@ -129,6 +129,7 @@ class Chat extends React.PureComponent {
 
 			modalEnabled: false,
 			modalData: {},
+			modalType: "",
 		};
 
 		/*- Variables -*/
@@ -198,19 +199,29 @@ class Chat extends React.PureComponent {
 	};
 
 	/*- Modals -*/
-	showModal(userObj) {
+	showModal(type, userObj = null, objdata = {}) {
 
-		/*- The users SUID -*/
-		const suid = userObj.owner;
+		if (userObj) {
+			/*- The users SUID -*/
+			const suid = userObj.owner;
+			
+			/*- The users profile-data -*/
+			const data = this.userCache[suid] && this.userCache[suid].data || {};
 
-		/*- The users profile-data -*/
-		const data = this.userCache[suid] && this.userCache[suid].data || {};
-
-		/*- Set the modal data -*/
-		this.setState({
-			modalEnabled: true,
-			modalData: { ...data },
-		});
+			/*- Set the modal data -*/
+			this.setState({
+				modalEnabled: true,
+				modalData: { ...data },
+				modalType: type,
+			});
+		}else {
+			/*- Set the modal data -*/
+			this.setState({
+				modalEnabled: true,
+				modalData: { ...objdata },
+				modalType: type,
+			});
+		}
 	}
 
 	/*- Add message function -*/
@@ -325,36 +336,30 @@ class Chat extends React.PureComponent {
 		this.props.navigation.navigate("Home");
 	}
 
-	/*- Friend adding -*/
-	async addFriend(suid) {
-		/*- The suid is needed to make a friend request because of security reasons -*/
-		const self_suid = await AsyncStorage.getItem("suid");
-
-		/*- Make the ACTUAL friend request -*/
-		await fetch(this._server_cdn + "/api/add-friend", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				suid, // Okay, the suid is the person that is GETTING the friend request, not sending
-				friend: self_suid, // The current user that wants to be friends with the other user
+	/*- When a friendship is made -*/
+	acceptFriendRequest(suid, friend) {
+		this.client.send(JSON.stringify({
+			type: "friend-accept",
+			data: {
+				suid,
+				friend,
+				roomid: this.roomid,
 			},
-		}).then(res => {
-			if (res.status === 200) {
-				/*- Send a ws message to the other user that they've been added -*/
-				this.client.send(JSON.stringify({
-					type: "friend",
-					data: {
-						friend: suid,
-						roomid: this.roomid,
-						suid: this.suid,
-					},
-				}));
+		}));
+	}
 
-				this.makeNotice("Friend request sent!");
-			} else {
-				this.makeNotice("Something went wrong...");
-			}
-		});
+	/*- Friend adding -*/
+	async sendFriendRequest(suid) {
+		/*- Send a ws message to the other user that they've been added -*/
+		this.client.send(JSON.stringify({
+			type: "friend-request",
+			data: {
+				friend: suid,
+				suid: this.suid,
+				roomid: this.roomid,
+			},
+		}));
+
 	};
 	
 	/*- Before render -*/
@@ -388,7 +393,7 @@ class Chat extends React.PureComponent {
 					time: get_hh_mm(),
 					type: "system",
 				});
-			}else if (response_type === "friend") {
+			}else if (response_type === "friend-request") {
 				const { friend, suid } = response.data;
 
 				/*- The "adders" name -*/
@@ -396,12 +401,21 @@ class Chat extends React.PureComponent {
 
 				/*- Check if the current user was the one who was added -*/
 				if (friend == this.suid) {
-					this.addMessage({
-						text: `${adder} sent you a friend request!`,
-						sender: "",
-						time: get_hh_mm(),
-						type: "system",
-					});
+					this.showModal("friend-request", null, {
+						adder: adder,
+						friendSuid: suid,
+						suid: this.suid,
+					})
+				}
+			}else if (response_type === "friend-accept") {
+				const { friend, suid } = response.data;
+
+				/*- The "adders" name -*/
+				const adder = this.userCache[suid].data.username;
+
+				/*- Check if the current user was the one who was added -*/
+				if (friend == this.suid) {
+					this.makeNotice(`${adder} & you are now friends!`);
 				}
 			}
 		};
@@ -431,15 +445,15 @@ class Chat extends React.PureComponent {
 
 					{/*- All messages here -*/}
 					<ScrollView onTouchStart={() => Keyboard.dismiss()} contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
-						<ChatMessage onProfilePress={() => this.showModal({username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
+						<ChatMessage onProfilePress={() => this.showModal("profile", {username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
 						
 						{this.state.messages.map((obj, index) => {
 							/*- If the message comes from the system like when someone leaves -*/
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
-							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
+							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => this.showModal("profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => this.showModal("profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
 						})}
 
 					</ScrollView>
@@ -473,14 +487,24 @@ class Chat extends React.PureComponent {
 					this.state.modalEnabled
 					&&
 					<Modal data={this.state.modalData} onClose={() => {
-						this.setState({
-							modalEnabled: false,
-						});
-					}} onAddFriend={(suid) => this.addFriend(suid)} />	
+							this.setState({
+								modalEnabled: false,
+							});
+						}}
+						onAddFriend={(suid) => this.sendFriendRequest(suid)}
+						type={this.state.modalType}
+						onFriendAccepted={(suid, friend) => this.acceptFriendRequest(suid, friend)}
+					/>	
 				}
 
 				{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
 				<BackButton onPress={this.leaveRoom} />
+
+				{/* <Modal data={{ adder: "artur", friendSuid: "hejsan", suid: this.suid }} onClose={() => {
+						this.setState({
+							modalEnabled: false,
+						});
+					}} onAddFriend={(suid) => this.sendFriendRequest(suid)} type={"friend-request"} />	 */}
 			</View>
 		);
 	}

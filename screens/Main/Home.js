@@ -114,6 +114,7 @@ export default class Home extends React.PureComponent {
 		this.state = {
 			imageURL: "",
 			friends: [],
+			refreshing: false,
 		};
 	}
 
@@ -145,6 +146,34 @@ export default class Home extends React.PureComponent {
 		})();
 	}
 
+	/*- Refresh the page -*/
+	refresh = () => {
+		this.setState({ refreshing: true });
+		(async () => {
+			try{
+				/*- Profile img -*/
+				const profile = await AsyncStorage.getItem("profile");
+				this.setState({
+					imageURL: profile
+				});
+
+				/*- Get the users friends -*/
+				const suid = await AsyncStorage.getItem("suid");
+				const friends = await fetch(`${this._server_cdn}/api/profile-data`, {
+					method: "GET",
+					headers: { suid },
+				});
+
+				/*- Render the friends -*/
+				const friendsJSON = await friends.json();
+				this.setState({
+					friends: friendsJSON.data.friends,
+					refreshing: false,
+				});
+			}catch {};
+		})();
+	}
+
 	render() {
 		/*- Get the navigation handler -*/
 		const { navigation } = this.props;
@@ -152,15 +181,13 @@ export default class Home extends React.PureComponent {
 		return (
 			<View style={def.accountContainer}>
 				<TopNav imageURL={this.state.imageURL} navigation={navigation} />
-				<ScrollView refreshControl={<RefreshControl refreshing={false} />}>
+				<ScrollView refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.refresh} />}>
 					<FriendGetter />
 				</ScrollView>
 
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Join Lobby</StartButton>
-
-				<Modal onClose={() => {}} />
 			</View>
 		);
 	}

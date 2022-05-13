@@ -1,11 +1,8 @@
 import React from "react";
-import { View, ScrollView, Image, Text, RefreshControl, TouchableHighlight } from "react-native";
-import { styles as style, def, stylevar } from "../../Style";
-import { TopNav } from "../../components/molecules/TopNav";
+import { View, Image, Text, TextInput } from "react-native";
+import { styles as style, def } from "../../Style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StartButton } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
-import { Modal } from "../../components/molecules/Modal";
 
 const styles = style.profile; /*- Profile styles lies here -*/
 
@@ -93,6 +90,7 @@ export default class Profile extends React.PureComponent {
 				<View style={[styles.accountNameContainer, { justifyContent: "center", alignItems: "center" }]}>
 					<Text style={styles.accountName}>{this.get("displayname")}</Text>
 					<Text style={styles.accountUsername}>@{this.get("username")}</Text>
+					<TextInput value={this.get("suid")} />
 				</View>
 			</View>
 		);

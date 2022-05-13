@@ -15,6 +15,12 @@ const H2 = ({ children, ...props }) => (
     </Text>
 );
 
+const H3 = ({ children, ...props }) => (
+    <Text numberOfLines={3} style={styles.h3} {...props}>
+        {children}
+    </Text>
+);
+
 const P = ({ children, ...props }) => (
     <Text style={styles.p} {...props}>
         {children}
@@ -32,4 +38,4 @@ const BIGTEXT = ({ children, ...props }) => (
     </Text>
 );
 
-export { H1, H2, BIGTEXT, P, HR };
+export { H1, H2, H3, BIGTEXT, P, HR };

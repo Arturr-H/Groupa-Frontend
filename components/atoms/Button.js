@@ -36,7 +36,7 @@ class TileButtonContainer extends React.PureComponent {
     /*- Render the button-container -*/
     render() {
         return (
-            <View style={styles.tileButtonContainer}>{this.props.children}</View>
+            <View style={[styles.tileButtonContainer, this.props.style || {}]}>{this.props.children}</View>
         );
     }
 }
@@ -56,6 +56,7 @@ class TileButton extends React.PureComponent {
                 style                = {[
                     styles.tileButton,
                     this.props.style || {}, this.is_hollow ? styles.hollowButton : {},
+                    this.props.color ? { backgroundColor: this.props.color } : {},
                     this.position == "left" ? {
                         borderTopLeftRadius: 10,
                         borderBottomLeftRadius: 10,

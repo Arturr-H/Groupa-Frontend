@@ -2,7 +2,7 @@ import React from "react";
 import { View, Animated, Easing, PanResponder } from "react-native";
 import { styles as style, width, height } from "../../Style";
 import { BlurView } from "expo-blur"
-import { AccountBubble, Button, H2, P, HR } from "../AtomBundle";
+import { AccountBubble, Button, H2, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
 
 const styles = style.input; // Modal styles lies here
 
@@ -158,21 +158,30 @@ class Modal extends React.PureComponent {
                     <HR />
 
                     <P>
-                        ”Dolor nostrud minim et ad exercitation exercitation minim non laborum commodo veniam. Ipsum reprehenderit incididunt aliqua cupidatat cillum incididunt ipsum esse nostrud do. Pariatur magna adipisicing ad quis nisi ex aliqua deserunt enim laboris deserunt. Esse in cillum culpa id Lorem. Lorem irure ut incididunt nostrud non dolor exercitation dolor ea. Culpa do irure ut Lorem.”
+                        ”Dolor nostrud minim et ad exercitation exercitation minim non
+                        laborum commodo veniam. Ipsum reprehenderit incididunt aliqua
+                        cupidatat cillum incididunt ipsum esse nostrud do. Pariatur
+                        magna adipisicing ad quis nisi ex aliqua deserunt enim laboris
+                        deserunt. Esse in cillum culpa id Lorem. Lorem irure ut incididunt"
                     </P>
 
                     <HR margin={true} />
-                    <HR />
 
                     <Button style={{ marginBottom: 10 }} onPress={() => this.props.onAddFriend(this.state.userData.suid)}>Add friend</Button>
+                    <TileButtonContainer>
+                        <TileButton pos={"left"} hollow={true} onPress={() => { }}>Vote Kick</TileButton>
+                        <TileButton pos={"right"} hollow={true} onPress={() => { }}>Close</TileButton>
+                    </TileButtonContainer>
                     <Button hollow={true} style={{ marginBottom: 0 }} onPress={() => {
                         this.disable(true);
-                    }}>Cancel</Button>
+                    }}>Close</Button>
+
                 </BlurView>
             </Animated.View>
         );
     };
 }
+
 
 export {
     Modal

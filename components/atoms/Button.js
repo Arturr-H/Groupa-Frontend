@@ -1,5 +1,5 @@
 import { styles as style, stylevar } from "../../Style";
-import { TouchableOpacity, Text, Image } from "react-native";
+import { TouchableOpacity, Text, Image, View } from "react-native";
 import React from "react";
 import { Haptic } from "../../func/Haptic";
 const styles = style.input; /*- Input styles lies here -*/
@@ -23,6 +23,60 @@ class Button extends React.PureComponent {
                 activeOpacity	     = {0.8}
             >
                 <Text style={[styles.submitInputText, this.is_hollow ? { color: stylevar.colors.main } : {}]}>{this.props.children}</Text>
+            </TouchableOpacity>
+        );
+    }
+}
+
+class TileButtonContainer extends React.PureComponent {
+    constructor(props) {
+        super(props);
+    }
+       
+    /*- Render the button-container -*/
+    render() {
+        return (
+            <View style={styles.tileButtonContainer}>{this.props.children}</View>
+        );
+    }
+}
+/*- Like the button, but can be split into smaller ones next to eachother -*/
+class TileButton extends React.PureComponent {
+    constructor(props) {
+        super(props);
+
+        this.is_hollow = this.props.hollow;
+        this.position = this.props.pos;
+    }
+       
+    /*- Render the button -*/
+    render() {
+        return (
+            <TouchableOpacity
+                style                = {[
+                    styles.tileButton,
+                    this.props.style || {}, this.is_hollow ? styles.hollowButton : {},
+                    this.position == "left" ? {
+                        borderTopLeftRadius: 10,
+                        borderBottomLeftRadius: 10,
+                        marginRight: 5,
+                    } : null,
+                    this.position == "right" ? {
+                        borderTopRightRadius: 10,
+                        borderBottomRightRadius: 10,
+                        marginLeft: 5,
+                    } : null,
+                    this.position == "middle" ? {
+                        marginHorizontal: 5,
+                    } : null,
+                ]}
+                onPress              = {() => {
+                    this.props.onPress();
+                    Haptic("medium");
+                }}
+                activeOpacity	     = {0.8}
+            >
+                <Text style={[styles.tileButtonText, this.is_hollow ? { color: stylevar.colors.main } : {}]}>{this.props.children}</Text>
             </TouchableOpacity>
         );
     }
@@ -77,5 +131,7 @@ class StartButton extends React.PureComponent {
 export {
     Button,
     StartButton,
-    BackButton
+    BackButton,
+    TileButton,
+    TileButtonContainer
 }

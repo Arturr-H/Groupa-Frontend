@@ -19,6 +19,8 @@ class ChatMessage extends React.PureComponent {
 		this.user_owned = this.props.user_owned;
 		this.userCache = this.props.userCache;
 
+		this.placeholder = this.props.placeholder;
+
 	}
 
 	/*- Server handler -*/
@@ -28,11 +30,11 @@ class ChatMessage extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<View style={
+			<View style={[
 				this.user_owned
 					? styles.chatMessageWrapperOwned
-					: styles.chatMessageWrapper
-			}>
+					: styles.chatMessageWrapper,
+			]}>
 				{/*- If the user "owns" the message we
 					don't want to display their avatar -*/
 					this.user_owned
@@ -41,31 +43,35 @@ class ChatMessage extends React.PureComponent {
 						<Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
 					</TouchableOpacity>
 				}
-				<View style={
+				<View style={[
 					/*- We want dependent styles (if message is owned or not) -*/
 					this.user_owned
-					? styles.chatMessageOwned
-					: styles.chatMessage
-				}>
+						? styles.chatMessageOwned
+						: styles.chatMessage,
+
+					this.placeholder
+						? styles.chatMessagePlaceholder
+						: {}
+				]}>
 					{/*- Text area -*/}
 					<View style={styles.chatMessageTextArea}>
 						{
 							/*- Only show the username if message is not owned -*/
-								<Text style={[styles.chatMessageUserText, 
-									this.user_owned
-										? { color: "white" }
-										: null,
+							<Text style={[styles.chatMessageUserText, 
+								this.user_owned
+									? { color: "white" }
+									: null,
 
+								this.user_owned
+									? { textAlign: "right" }
+									: { textAlign: "left" },
+							]}>
+								{
 									this.user_owned
-										? { textAlign: "right" }
-										: { textAlign: "left" },
-								]}>
-									{
-										this.user_owned
-											? "You"
-											: "@" + this.userCache.username
-									} : {get_hh_mm(this.props.time)}
-								</Text>
+										? "You"
+										: "@" + this.userCache.username
+								} : {get_hh_mm(this.props.time)}
+							</Text>
 						}
 						<Text style={[
 							styles.chatMessageText,
@@ -78,7 +84,7 @@ class ChatMessage extends React.PureComponent {
 									? "right"
 									: "left",
 							}
-						]}>
+						]} numberOfLines={20}>
 							{this.props.text}
 						</Text>
 					</View>
@@ -163,22 +169,32 @@ class Chat extends React.PureComponent {
 	/*- Send message -*/
 	sendMessage(text) {
 
+		const messageData = {
+			text,
+			sender: this.suid,
+			roomid: this.roomid,
+			time: new Date().getTime(),
+			messageId: this.getMessageId(),
+		};
+
+		/*- Show a placeholder message -*/
+		this.addMessage({ ...messageData }, true);
+
 		/*- Check if message is invalid -*/
 		if (text.length === 0) { return; };
-
 		this.client.send(JSON.stringify({
 			type: "message",
-			data: {
-				text,
-				sender: this.suid,
-				roomid: this.roomid,
-				time: new Date().getTime(),
-			},
+			data: { ...messageData },
 		}));
 	};
 	submitEditing()	{
 		this.sendMessage(this.state.message);
 		this.setState({ message: "" });
+	};
+	/*- All messages are connected to a messageid -*/
+	getMessageId() {
+		/*- Just random chars -*/
+		return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 	};
 
 	/*- Modals -*/
@@ -198,10 +214,33 @@ class Chat extends React.PureComponent {
 	}
 
 	/*- Add message function -*/
-	addMessage(data) {
+	addMessage(data, is_sending = false) {
 
 		/*- Get the data -*/
-		const { text, sender, time, type } = data;
+		const { text, sender, time, type, messageId } = data;
+
+		/*- If the message is still pending, make a placholder -*/
+		if(is_sending) {
+			return this.setState({
+				messages: [
+					...this.state.messages,
+					{
+						text,
+						owned: sender === this.suid,
+						owner: sender,
+						time,
+						type,
+						is_sending,
+						messageId,
+					},
+				],
+			});
+		}else {
+			/*- Remove the placeholder message -*/
+			this.setState({
+				messages: this.state.messages.filter(message => message.is_sending !== true),
+			});
+		}
 
 		/*- if message merging was successful -*/
 		let merge_success = false;
@@ -243,6 +282,7 @@ class Chat extends React.PureComponent {
 								owned: sender === this.suid,
 								time,
 								type,
+								messageId,
 							},
 							...this.state.messages.slice(amount_of_messages),
 						],
@@ -260,6 +300,7 @@ class Chat extends React.PureComponent {
 						owner: sender,
 						time,
 						type,
+						messageId,
 					},
 				],
 			});
@@ -385,18 +426,20 @@ class Chat extends React.PureComponent {
                 	style={styles.gradientOverlay}
                 />
 
+				{/*- Chat messages and input are here -*/}
 				<KeyboardAvoidingView style={styles.chatContainer} behavior="position">
 
 					{/*- All messages here -*/}
 					<ScrollView onTouchStart={() => Keyboard.dismiss()} contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
-					<ChatMessage onProfilePress={() => this.showModal({username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
+						<ChatMessage onProfilePress={() => this.showModal({username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
 						
 						{this.state.messages.map((obj, index) => {
 							/*- If the message comes from the system like when someone leaves -*/
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
+							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => this.showModal(obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
 						})}
 
 					</ScrollView>
@@ -418,12 +461,12 @@ class Chat extends React.PureComponent {
 
 							/*- Send message when enter is pressed -*/
 							onSubmitEditing={this.submitEditing}
+							maxLength={500}
 						/>
 						<TouchableHighlight onPress={this.submitEditing} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
 					</LinearGradient>
-
 				</KeyboardAvoidingView>	
-				<BackButton onPress={this.leaveRoom} />
+
 
 				{/*- Modal for profile -*/}
 				{
@@ -437,6 +480,7 @@ class Chat extends React.PureComponent {
 				}
 
 				{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
+				<BackButton onPress={this.leaveRoom} />
 			</View>
 		);
 	}

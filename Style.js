@@ -229,6 +229,32 @@ const styles = {
 			height: 70,
 			paddingBottom: 10,
 		},
+
+		tileButtonContainer: {
+			width: "100%",
+
+			display: "flex",
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+			marginBottom: 10,
+		},
+		tileButton: {
+			backgroundColor: stylevar.colors.main,
+
+			height: 50,
+			flex: 1,
+
+			display: "flex",
+			justifyContent: "center",
+			alignItems: "center",
+		},
+		tileButtonText: {
+			color: "#fff",
+			fontWeight: "bold",
+			fontSize: 18,
+		},
+
 	}),
 
 	text: StyleSheet.create({
@@ -393,6 +419,9 @@ const styles = {
 			marginLeft: "auto",
 
 			marginBottom: 10,
+		},
+		chatMessagePlaceholder: {
+			backgroundColor: "gray"
 		},
 
 		chatMessage: {

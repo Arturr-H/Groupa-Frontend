@@ -22,6 +22,11 @@ const Stack = createNativeStackNavigator();
 /*- Needs to be called App -*/
 export default function App() {
 
+	//e: client@1.com ---- p: Client1
+	//e: client@1.com ---- p: Client1
+	//e: client@1.com ---- p: Client1
+	//e: client@1.com ---- p: Client1
+
 	const [loaded] = useFonts({
 		"PoppinsBold": require("./assets/fonts/Poppins-Bold.ttf"),
 	});

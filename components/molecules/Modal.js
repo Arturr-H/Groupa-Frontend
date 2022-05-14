@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Animated, Easing, PanResponder, Keyboard } from "react-native";
+import { View, Animated, Easing, PanResponder, Keyboard, TouchableOpacity, Text } from "react-native";
 import { styles as style, width, height, stylevar } from "../../Style";
 import { BlurView } from "expo-blur"
 import { AccountBubble, Button, H2, H3, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
+import { Camera } from "expo-camera";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const styles = style.input; // Modal styles lies here
 
@@ -55,7 +57,115 @@ const FriendRequest = (this_) => <>
         <TileButton pos={"left"} hollow={true} onPress={() => this_.disable(true)}>Decline</TileButton>
         <TileButton pos={"right"} color={stylevar.colors.green} hollow={false} onPress={() => this_.onAccept()}>Accept</TileButton>
     </TileButtonContainer>
-</>
+</> 
+
+class CameraView extends React.PureComponent {
+    /*- Permission vairables -*/
+    constructor(props) {
+        super(props);
+
+        /*- Changeable -*/
+        this.state = {
+            hasPermission: null,
+            type: Camera.Constants.Type.back,
+        };
+
+        /*- Refs -*/
+        this.camera = React.createRef();
+    };
+
+    componentDidMount() {
+        (async () => {
+            /*- Wait for access -*/
+            const { status } = await Camera.requestCameraPermissionsAsync();
+            
+            this.setState({ hasPermission: status === "granted" });
+
+            /*- Check if the end user gave the app permissions -*/
+            if (this.state.hasPermission === null) return <View />;
+            if (this.state.hasPermission === false) return <Text>No access to camera</Text>;
+        })();
+    };
+
+    /*- Server handler variables -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
+
+    /*- We'll upload the pircture in here -*/
+    takePicture = async () => {
+        if (this.camera.current){
+            /*- Take the picture -*/
+            let photo = await this.camera.current.takePictureAsync();
+
+            /*- Upload the picture to the cdn server -*/
+            this.uploadPhoto(photo);
+        }
+    }
+
+    /*- Upload the picture to the cdn server -*/
+    uploadPhoto = async (photo) => {
+        if (photo) {
+            const suid = await AsyncStorage.getItem("suid");
+
+            /*- Create a form containing the image info -*/
+            let formData = new FormData();
+            formData.append("profile-file", {
+                uri: photo.uri,
+                name: "photo.jpg",
+                type: "image/jpg",
+            });
+
+            /*- Fetch POST -*/
+            let response = await fetch(`${this._server_cdn}/api/profile-upload`, {
+                method: "POST",
+                body: formData,
+                headers: { suid }
+            });
+            let responseJson = await response.json();
+
+            /*- Check if the upload was successful -*/
+            alert(responseJson.message);
+            this.props.this_.disable(true);
+        }
+    }
+
+    /*- Render -*/
+    render() {
+        return (
+            <React.Fragment>
+                <View style={styles.modalHeader}>
+                    <H3>Add a profile picture</H3>
+                </View>
+
+                <HR />
+                {/*- Camera -*/}
+                <View style={style.camera.cameraContainer}>
+                    <Camera style={style.camera.camera} type={this.state.type} ref={this.camera}/>
+                    <TouchableOpacity
+                        style={style.camera.flipButtonContainer}
+                        onPress={() => {
+                            this.setState({
+                                type: this.state.type === Camera.Constants.Type.back
+                                    ? Camera.Constants.Type.front
+                                    : Camera.Constants.Type.back,
+                            });
+                        }}>
+                            <BlurView tint="dark" style={style.camera.flipButton}>
+                                <Text style={style.camera.flipText}> Flip </Text>
+                            </BlurView>
+                    </TouchableOpacity>
+                </View>
+                <HR margin={true} />
+                <HR />
+                <TileButtonContainer style={{ marginBottom: 0 }}>
+                    <TileButton pos={"left"} hollow={true} onPress={() => this_.disable(true)}>Cancel</TileButton>
+                    <TileButton pos={"right"}  hollow={false} onPress={() => this.takePicture()}>Take Picture</TileButton>
+                </TileButtonContainer>
+            </React.Fragment>
+        );
+    };
+};
 
 class Modal extends React.PureComponent {
     constructor(props) {
@@ -72,6 +182,7 @@ class Modal extends React.PureComponent {
 
             vxmap: Array(8).fill(0),
             vymap: Array(8).fill(0),
+            anglemap: Array(12).fill(0),
         };
 
         /*- Modal intro start animation y-value -*/
@@ -82,9 +193,9 @@ class Modal extends React.PureComponent {
         this.animate = this.animate.bind(this);
         this.onAccept = this.onAccept.bind(this);
 
-        this.onFriendAccepted = this.props.onFriendAccepted;
-        this.friendSuid = this.props.data.friendSuid;
-        this.suid = this.props.data.suid;
+        this.onFriendAccepted = this.props.onFriendAccepted || "";
+        this.friendSuid = this.props.data && this.props.data.friendSuid || "";
+        this.suid = this.props.data && this.props.data.suid || "";
 
         /*- Modal pan responder -*/
         this.panResponder = PanResponder.create({
@@ -109,7 +220,15 @@ class Modal extends React.PureComponent {
                     vx: this.state.vxmap.reduce((a, b) => a + b, 0) / this.state.vxmap.length,
                     vy: this.state.vymap.reduce((a, b) => a + b, 0) / this.state.vymap.length,
                 }
-                const angle = Math.atan2(average.vy, average.vx) + Math.PI / 2;
+
+                /*- Add the angle to its responding map -*/
+                this.state.anglemap.push(Math.atan2(average.vy, average.vx) + Math.PI / 2);
+
+                /*- Remove the oldest angle -*/
+                this.state.anglemap.shift();
+
+                /*- The angle should point in the direction of the velocity -*/
+                const angle = this.state.anglemap.reduce((a, b) => a + b, 0) / this.state.anglemap.length;
 
                 /*- Set the rotation -*/
                 this.state.modalRotation.setValue(angle);
@@ -248,6 +367,8 @@ class Modal extends React.PureComponent {
                         ? FriendRequest(this)
                         : this.props.type === "profile"
                         ? UserProfile(this)
+                        : this.props.type === "camera"
+                        ? <CameraView this_={this} />
                         : null
                     }
 

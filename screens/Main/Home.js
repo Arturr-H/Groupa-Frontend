@@ -112,11 +112,16 @@ export default class Home extends React.PureComponent {
 		super(props);
 
 		this.state = {
-			imageURL: "",
+			profile: "",
 			friends: [],
 			refreshing: false,
 		};
 	}
+
+	/*- Server handler variables -*/
+	_server_handler = new ServerHandler();
+	_server_url = this._server_handler.get_url();
+	_server_cdn = this._server_handler.get_cdn();
 
 	/*- Before render -*/
 	componentDidMount() {
@@ -124,23 +129,20 @@ export default class Home extends React.PureComponent {
 		/*- Get the users profile image and render it -*/
 		(async () => {
 			try{
-				/*- Profile img -*/
-				const profile = await AsyncStorage.getItem("profile");
-				this.setState({
-					imageURL: profile
-				});
-
-				/*- Get the users friends -*/
+				/*- Get the users data & friends -*/
 				const suid = await AsyncStorage.getItem("suid");
-				const friends = await fetch(`${this._server_cdn}/api/profile-data`, {
+				console.log(suid);
+				const data = await fetch(`${this._server_cdn}/api/profile-data`, {
 					method: "GET",
 					headers: { suid },
 				});
 
 				/*- Render the friends -*/
-				const friendsJSON = await friends.json();
+				const json = await data.json();
+				console.log(json.data.profile);
 				this.setState({
-					friends: friendsJSON.data.friends
+					friends: json.data.friends,
+					profile: json.data.profile,
 				});
 			}catch {};
 		})();
@@ -154,7 +156,7 @@ export default class Home extends React.PureComponent {
 				/*- Profile img -*/
 				const profile = await AsyncStorage.getItem("profile");
 				this.setState({
-					imageURL: profile
+					profile: profile
 				});
 
 				/*- Get the users friends -*/
@@ -180,7 +182,7 @@ export default class Home extends React.PureComponent {
 
 		return (
 			<View style={def.accountContainer}>
-				<TopNav imageURL={this.state.imageURL} navigation={navigation} />
+				<TopNav imageURL={this.state.profile} navigation={navigation} />
 				<ScrollView refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.refresh} />}>
 					<FriendGetter />
 				</ScrollView>

@@ -708,7 +708,8 @@ const styles = {
 			borderRadius: 45,
 	
 			marginRight: 10,
-			zIndex: 0
+			zIndex: 0,
+			overflow: "hidden"
 		},
 	
 		ownedPostsContainer: {
@@ -747,6 +748,50 @@ const styles = {
 			height: "100%",
 	
 			borderRadius: 10,
+		},
+	}),
+
+	camera: StyleSheet.create({
+		cameraContainer: {
+			width: 200,
+
+			left: "50%",
+			transform: [{ translateX: -100 }],
+		},
+		camera: {
+			width: 200,
+
+			aspectRatio: 1,
+			borderRadius: 100,
+			overflow: "hidden",
+
+			...Default.border,
+		},
+		flipButtonContainer: {
+			position: "absolute",
+			borderRadius: 50,
+			width: 60,
+
+			borderRadius: 50,
+			overflow: "hidden",
+			borderColor: stylevar.border.light,
+			borderWidth: 1,
+		},
+		flipButton: {
+			padding: 10,
+			display: "flex",
+			justifyContent: "center",
+				alignItems: "center",
+			
+			width: "100%",
+			height: "100%",
+		},
+		flipText: {
+			fontFamily: "PoppinsBold",
+			fontWeight: "500",
+			fontSize: 12,
+			
+			color: stylevar.colors.fg,
 		},
 	}),
 };

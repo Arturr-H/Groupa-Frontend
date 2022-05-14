@@ -3,6 +3,8 @@ import { View, Image, Text, TextInput } from "react-native";
 import { styles as style, def } from "../../Style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
+import { Camera } from "../../components/molecules/Camera";
+import { Modal } from "../../components/molecules/Modal";
 
 const styles = style.profile; /*- Profile styles lies here -*/
 
@@ -15,6 +17,8 @@ export default class Profile extends React.PureComponent {
 		this.state = {
 			userData: {},
 			loading: false,
+
+			modalEnabled: true,
 		};
 	}
 
@@ -73,13 +77,14 @@ export default class Profile extends React.PureComponent {
 		return (
 			<View style={def.container}>
 				<View style={styles.statContainer}>
-					<Image style={styles.accountImageBig} source={{ uri: this.get("profile") || "https" }} />
+					<View style={styles.accountImageBig} source={{ uri: this.get("profile") || "https" }} />
+
 					<View style={styles.statTextContainer}>
 						<Text style={styles.statTopText}>{12}</Text>
 						<Text style={styles.statBottomText}>Posts</Text>
 					</View>
 					<View style={styles.statTextContainer}>
-						<Text style={styles.statTopText}>{this.state.userData.friends && this.state.userData.friends.length}</Text>
+						<Text style={styles.statTopText}>{this.get("friends").length}</Text>
 						<Text style={styles.statBottomText}>Friends</Text>
 					</View>
 					<View style={styles.statTextContainer}>
@@ -92,6 +97,8 @@ export default class Profile extends React.PureComponent {
 					<Text style={styles.accountUsername}>@{this.get("username")}</Text>
 					<TextInput value={this.get("suid")} />
 				</View>
+
+				{ this.state.modalEnabled && <Modal type="camera" onClose={() => this.setState({ modalEnabled: false })} /> }
 			</View>
 		);
 	}

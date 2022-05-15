@@ -29,6 +29,10 @@ export default function App() {
 
 	const [loaded] = useFonts({
 		"PoppinsBold": require("./assets/fonts/Poppins-Bold.ttf"),
+		"Inter-1": require("./assets/fonts/Inter-Light.ttf"),
+		"Inter-2": require("./assets/fonts/Inter-Medium.ttf"),
+		"Inter-3": require("./assets/fonts/Inter-SemiBold.ttf"),
+		"Inter-4": require("./assets/fonts/Inter-Bold.ttf"),
 	});
 	if (!loaded) return null;
 

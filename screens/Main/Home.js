@@ -131,7 +131,7 @@ export default class Home extends React.PureComponent {
 			try{
 				/*- Get the users data & friends -*/
 				const suid = await AsyncStorage.getItem("suid");
-				console.log(suid);
+
 				const data = await fetch(`${this._server_cdn}/api/profile-data`, {
 					method: "GET",
 					headers: { suid },
@@ -139,7 +139,7 @@ export default class Home extends React.PureComponent {
 
 				/*- Render the friends -*/
 				const json = await data.json();
-				console.log(json.data.profile);
+
 				this.setState({
 					friends: json.data.friends,
 					profile: json.data.profile,
@@ -190,12 +190,6 @@ export default class Home extends React.PureComponent {
 				<StartButton
 					onPress={() => navigation.navigate("Lobby")}
 				>Join Lobby</StartButton>
-
-				<Modal data={{ adder: "artur" }} onClose={() => {
-						this.setState({
-							modalEnabled: false,
-						});
-					}} onAddFriend={(suid) => this.sendFriendRequest(suid)} type={"profile"} />	
 			</View>
 		);
 	}

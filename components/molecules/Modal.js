@@ -11,8 +11,11 @@ const styles = style.input; // Modal styles lies here
 
 const MODAL_START_Y = -100;
 const MODAL_DURATION = 500;
+const MODAL_FAST_DURATION = 100;
 const VELOCITY_MIN = 1.3;
 const center = { x: -width*0.4, y: -height*0.3 };
+
+let concurrent_modals = 0;
 
 const UserProfile = (this_) => <>
     <View style={styles.modalHeader}>
@@ -72,6 +75,9 @@ class CameraView extends React.PureComponent {
 
         /*- Refs -*/
         this.camera = React.createRef();
+
+        /*- Function bindings -*/
+        this.flipCamera = this.flipCamera.bind(this);
     };
 
     componentDidMount() {
@@ -130,6 +136,14 @@ class CameraView extends React.PureComponent {
         }
     }
 
+    flipCamera = () => {
+        this.setState({
+            type: this.state.type === Camera.Constants.Type.back
+                ? Camera.Constants.Type.front
+                : Camera.Constants.Type.back,
+        });
+    };
+
     /*- Render -*/
     render() {
         return (
@@ -141,26 +155,13 @@ class CameraView extends React.PureComponent {
                 <HR />
                 {/*- Camera -*/}
                 <View style={style.camera.cameraContainer}>
-                    <Camera style={style.camera.camera} type={this.state.type} ref={this.camera}/>
-                    <TouchableOpacity
-                        style={style.camera.flipButtonContainer}
-                        onPress={() => {
-                            this.setState({
-                                type: this.state.type === Camera.Constants.Type.back
-                                    ? Camera.Constants.Type.front
-                                    : Camera.Constants.Type.back,
-                            });
-                        }}>
-                            <BlurView tint="dark" style={style.camera.flipButton}>
-                                <Text style={style.camera.flipText}> Flip </Text>
-                            </BlurView>
-                    </TouchableOpacity>
+                    <Camera ratio="1:1" style={style.camera.camera} type={this.state.type} ref={this.camera}/>
                 </View>
-                <HR margin={true} />
                 <HR />
                 <TileButtonContainer style={{ marginBottom: 0 }}>
-                    <TileButton pos={"left"} hollow={true} onPress={() => this_.disable(true)}>Cancel</TileButton>
-                    <TileButton pos={"right"}  hollow={false} onPress={() => this.takePicture()}>Take Picture</TileButton>
+                    <TileButton pos={"left"} hollow={true} onPress={() => this.props.this_.disable(true)}>Cancel</TileButton>
+                    <TileButton pos={"mid"} hollow={false} color={stylevar.colors.main} customStyle={{ width: 10, }} onPress={this.flipCamera}>Flip</TileButton>
+                    <TileButton pos={"right"}  hollow={false} color={stylevar.colors.green} onPress={() => this.takePicture()}>Use</TileButton>
                 </TileButtonContainer>
             </React.Fragment>
         );
@@ -180,8 +181,8 @@ class Modal extends React.PureComponent {
             modalRotation: new Animated.Value(0),
             modalInteractable: true,
 
-            vxmap: Array(8).fill(0),
-            vymap: Array(8).fill(0),
+            vxmap: Array(24).fill(0),
+            vymap: Array(24).fill(0),
             anglemap: Array(12).fill(0),
         };
 
@@ -221,14 +222,8 @@ class Modal extends React.PureComponent {
                     vy: this.state.vymap.reduce((a, b) => a + b, 0) / this.state.vymap.length,
                 }
 
-                /*- Add the angle to its responding map -*/
-                this.state.anglemap.push(Math.atan2(average.vy, average.vx) + Math.PI / 2);
-
-                /*- Remove the oldest angle -*/
-                this.state.anglemap.shift();
-
                 /*- The angle should point in the direction of the velocity -*/
-                const angle = this.state.anglemap.reduce((a, b) => a + b, 0) / this.state.anglemap.length;
+                const angle = Math.atan2(average.vy, average.vx) + Math.PI / 2;
 
                 /*- Set the rotation -*/
                 this.state.modalRotation.setValue(angle);
@@ -248,9 +243,13 @@ class Modal extends React.PureComponent {
 
                 /*- If the velocity is high enough -*/
                 if (Math.abs(vx) > VELOCITY_MIN || Math.abs(vy) > VELOCITY_MIN) {
+
+                    let close_speed = 900;
+                    if (concurrent_modals > 0) close_speed = MODAL_FAST_DURATION;
+
                     /*- Animate the modal moving to the direction -*/
-                    this.animate(this.state.drag, { x: -dx*-4, y: -dy*-4 }, 900);
-                    this.animate(this.modalO, 0, 900, () => {
+                    this.animate(this.state.drag, { x: -dx*-4, y: -dy*-4 }, close_speed);
+                    this.animate(this.modalO, 0, close_speed, () => {
                         this.disable();
                     });
                 }else {
@@ -260,12 +259,12 @@ class Modal extends React.PureComponent {
                     this.setState({ modalInteractable: false });
 
                     /*- Animate the modal back to the center -*/
-                    this.animate(this.state.drag, center, 1000, () => {
+                    this.animate(this.state.drag, center, 400, () => {
                         this.state.drag.setValue(center);
                         this.setState({ modalInteractable: true });
                     });
 
-                    this.animate(this.state.modalRotation, -(Math.PI / 2) * 4, 1000);
+                    this.animate(this.state.modalRotation, -(Math.PI / 2) * 4, 400);
                 }
             },
             onPanResponderRelease: () => {
@@ -304,13 +303,16 @@ class Modal extends React.PureComponent {
 
         /*- If closing animation should be on -*/
         if(with_anim) {
+            let close_speed = MODAL_DURATION;
+            if (concurrent_modals > 0) close_speed = MODAL_FAST_DURATION;
+
             this.animate(this.modalY, MODAL_START_Y);
             this.animate(this.modalO, 0);
 
             /*- Wait for the anim to finish then close it -*/
             setTimeout(() => {
                 this.props.onClose();
-            }, MODAL_DURATION);
+            }, close_speed);
         }else {
             this.props.onClose();
         }
@@ -330,9 +332,6 @@ class Modal extends React.PureComponent {
 		}).then(async response => await response.json()).then(res => {
 			if (res.status === 200) {
                 this.onFriendAccepted(this.suid, this.friendSuid);
-				console.log("Friend request accepted!");
-			} else {
-				console.log("Something went wrong...");
 			}
 		});
 
@@ -378,7 +377,39 @@ class Modal extends React.PureComponent {
     };
 }
 
+const showModal = (this_, type, data) => {
+    /*- Set the modal data -*/
+    this_.setState({
+        modalQueue: [
+            ...this_.state.modalQueue,
+            {
+                data: { data, type },
+                index: this_.state.modalQueue.length,
+            }
+        ]
+    });
+
+    concurrent_modals = this_.state.modalQueue.length;
+}
+
+const closeModal = (this_) => {
+    /*- Remove the modal from the queue -*/
+    this_.setState({
+        /*- Remove the first -*/
+        modalQueue: this_.state.modalQueue.splice(1),
+    }, () => {
+        this_.setState({
+            /*- If there are any more modals, show them -*/
+            modalQueue: this_.state.modalQueue.length > 0 ? this_.state.modalQueue : [],
+        });
+    });
+
+    /*- Decremenet the modal count -*/
+    concurrent_modals--;
+}
+
 
 export {
-    Modal
+    Modal,
+    showModal, closeModal
 }

@@ -1,9 +1,8 @@
 import React from "react";
-import { View, Image, Text, TextInput } from "react-native";
+import { View, Text, TextInput, Image, TouchableOpacity } from "react-native";
 import { styles as style, def } from "../../Style";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
-import { Camera } from "../../components/molecules/Camera";
 import { Modal } from "../../components/molecules/Modal";
 
 const styles = style.profile; /*- Profile styles lies here -*/
@@ -18,8 +17,12 @@ export default class Profile extends React.PureComponent {
 			userData: {},
 			loading: false,
 
-			modalEnabled: true,
+			modalEnabled: false,
+			profileImageRefresh: false,
 		};
+
+		/*- Refs -*/
+		this.profileImage = React.createRef();
 	}
 
 	/*- Server handler -*/
@@ -30,33 +33,33 @@ export default class Profile extends React.PureComponent {
 	/*- Before render -*/
 	componentDidMount() {
 		/*- Get the users data -*/
-		(async () => {
-			/*- Get the users suid -*/
-			const suid = await AsyncStorage.getItem("suid");
+		this.getUdata();
+	}
 
-			try {
-				/*- Get the users data from the server -*/
-				await fetch(`${this._server_cdn}/api/profile-data`, {
-					method: "GET",
-					headers: {
-						Accept: "application/json",
-						"Content-Type": "application/json",
-						suid: suid,
-					},
-				}).then(async response => await response.json())
-					.then(responseJson => {
-						this.setState({
-							userData: responseJson.data,
-						}, () => {
-							this.setState({ loading: false });
-							console.log(this.state.userData);
-						});
-					}
-				);
-			} catch (error) {
-				console.log(error);
-			};
-		})();
+	/*- Get the userdata-function -*/
+	async getUdata() {
+		/*- Get the users suid -*/
+		const suid = await AsyncStorage.getItem("suid");
+
+		try {
+			/*- Get the users data from the server -*/
+			await fetch(`${this._server_cdn}/api/profile-data`, {
+				method: "GET",
+				headers: {
+					Accept: "application/json",
+					"Content-Type": "application/json",
+					suid: suid,
+				},
+			}).then(async response => await response.json())
+				.then(responseJson => {
+					this.setState({
+						userData: responseJson.data,
+					}, () => {
+						this.setState({ loading: false });
+					});
+				}
+			);
+		}catch {};
 	}
 
 	/*- Safe way of getting data from the userdata object -*/
@@ -77,7 +80,20 @@ export default class Profile extends React.PureComponent {
 		return (
 			<View style={def.container}>
 				<View style={styles.statContainer}>
-					<View style={styles.accountImageBig} source={{ uri: this.get("profile") || "https" }} />
+					<View style={styles.accountImageBig}>
+						<Image
+							style={{ flex: 1, borderRadius: 100, }}
+							source={{ uri: this.get("profile") || "https" }}
+							refresh={this.state.profileImageRefresh}
+						/>
+						<TouchableOpacity
+							style={styles.changeImageButton}
+							activeOpacity={0.8}
+							onPress={() => this.setState({ modalEnabled: true })}
+						>
+							<Text style={styles.changeImageButtonPlus}>+</Text>
+						</TouchableOpacity>
+					</View>
 
 					<View style={styles.statTextContainer}>
 						<Text style={styles.statTopText}>{12}</Text>
@@ -98,7 +114,14 @@ export default class Profile extends React.PureComponent {
 					<TextInput value={this.get("suid")} />
 				</View>
 
-				{ this.state.modalEnabled && <Modal type="camera" onClose={() => this.setState({ modalEnabled: false })} /> }
+				{ this.state.modalEnabled && <Modal type="camera" onClose={(e) => {
+					this.setState({ modalEnabled: false });
+					
+					/*- Reload the profile image -*/
+					this.setState({ profileImageRefresh: true }, () => {
+						this.setState({ profileImageRefresh: false });
+					});
+				}} /> }
 			</View>
 		);
 	}

@@ -2,6 +2,7 @@ import { styles as style, stylevar } from "../../Style";
 import { TouchableOpacity, Text, Image, View } from "react-native";
 import React from "react";
 import { Haptic } from "../../func/Haptic";
+import { InputText } from "./Text";
 const styles = style.input; /*- Input styles lies here -*/
 
 class Button extends React.PureComponent {
@@ -22,7 +23,7 @@ class Button extends React.PureComponent {
                 }}
                 activeOpacity	     = {0.8}
             >
-                <Text style={[styles.submitInputText, this.is_hollow ? { color: stylevar.colors.main } : {}]}>{this.props.children}</Text>
+                <InputText color={this.is_hollow ? stylevar.colors.main : "#fff"}>{this.props.children}</InputText>
             </TouchableOpacity>
         );
     }
@@ -55,7 +56,7 @@ class TileButton extends React.PureComponent {
             <TouchableOpacity
                 style                = {[
                     styles.tileButton,
-                    this.props.style || {}, this.is_hollow ? styles.hollowButton : {},
+                    this.is_hollow ? styles.hollowButton : {},
                     this.props.color ? { backgroundColor: this.props.color } : {},
                     this.position == "left" ? {
                         borderTopLeftRadius: 10,
@@ -70,6 +71,7 @@ class TileButton extends React.PureComponent {
                     this.position == "middle" ? {
                         marginHorizontal: 5,
                     } : null,
+                    this.props.customStyle || {},
                 ]}
                 onPress              = {() => {
                     this.props.onPress();
@@ -77,7 +79,7 @@ class TileButton extends React.PureComponent {
                 }}
                 activeOpacity	     = {0.8}
             >
-                <Text style={[styles.tileButtonText, this.is_hollow ? { color: stylevar.colors.main } : {}]}>{this.props.children}</Text>
+                <InputText color={this.is_hollow ? stylevar.colors.main : "#fff"}>{this.props.children}</InputText>
             </TouchableOpacity>
         );
     }
@@ -122,7 +124,7 @@ class StartButton extends React.PureComponent {
                 }}
                 activeOpacity	     = { this.props.inactive ? 1 : 0.8 }
             >
-                <Text style={styles.submitInputText}>{this.props.children}</Text>
+                <InputText>{this.props.children}</InputText>
             </TouchableOpacity>
         );
     }

@@ -1,11 +1,11 @@
 import { View, Image, ActivityIndicator, Text, TouchableOpacity, Easing } from "react-native";
-import { def, styles as style, height, stylevar } from "../../Style";
+import { def, styles as style } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
-import { Modal } from "../../components/molecules/Modal";
+import { Modal, showModal, closeModal } from "../../components/molecules/Modal";
 import { BlurView } from "expo-blur";
 const styles = { ...style.lobby, ...style.chat } /*- Lobby styles lies here -*/
 
@@ -108,9 +108,7 @@ class Lobby extends React.PureComponent {
 			connectStaus: "Finding room...",
 			connectStausCode: 400,
 
-			modalEnabled: false,
-			modalData: {},
-			modalType: "",
+			modalQueue: [],
 		}
 
 		/*- Binds -*/
@@ -118,7 +116,6 @@ class Lobby extends React.PureComponent {
 		this.leave_room = this.leave_room.bind(this);
 		this.start_room = this.start_room.bind(this);
 		this.update_usercache = this.update_usercache.bind(this);
-		this.showModal = this.showModal.bind(this);
 	}
 
 	/*- Backend server URL handling -*/
@@ -157,7 +154,7 @@ class Lobby extends React.PureComponent {
 				}
 			}));
 
-		}catch(e){ console.log(e) };
+		}catch {};
 		this._navigation.navigate("Home");
 	}
 
@@ -208,16 +205,6 @@ class Lobby extends React.PureComponent {
 			};
 		});
 	};
-
-	/*- Modals -*/
-	showModal = (type, data) => {
-		/*- Set the modal data -*/
-		this.setState({
-			modalEnabled: true,
-			modalData: { ...data },
-			modalType: type,
-		});
-	}
 
 	/*- On mount -*/
 	componentDidMount = () => {
@@ -369,7 +356,7 @@ class Lobby extends React.PureComponent {
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/
-		this.client.onerror = (e) => { console.log(e) };
+		// this.client.onerror = (e) => { };
 	};
 
 	/*- Before unmounting -*/
@@ -399,7 +386,7 @@ class Lobby extends React.PureComponent {
 										key={key}
 										userData={userData}
 										suid={this.state.suid}
-										onClick={(e) => this.showModal("profile", e)}
+										onClick={(e) => showModal(this, "profile", e)}
 									/>
 								);
 							})}
@@ -412,15 +399,19 @@ class Lobby extends React.PureComponent {
 							: <StartButton onPress={this.leave_room}>Cancel</StartButton> 
 						}
 						{ this.state.noticeEnabled ? <Toast text={this.state.notice} onClose={() => this.setState({ noticeEnabled: false })} /> : null }
-						{/*- Modal for profile -*/}
+
+						{/*- Modals for profile -*/}
 						{
-							this.state.modalEnabled
-							&&
-							<Modal data={this.state.modalData} onClose={() => {
-								this.setState({
-									modalEnabled: false,
-								});
-							}} />	
+							/*- Get the first modal from the modalqueue -*/
+							this.state.modalQueue.map((modal, index) => (
+								index > 0 ? null :
+								<Modal
+									type={modal.data.type}
+									data={modal.data.data}
+									key={modal.index}
+									onClose={() => closeModal(this)}
+								/>	
+							))
 						}
 					</>
 					:

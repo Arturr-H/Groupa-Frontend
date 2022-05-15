@@ -5,8 +5,7 @@ import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { BackButton, P, Toast } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { LinearGradient } from "expo-linear-gradient";
-import { Modal } from "../../components/molecules/Modal";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Modal, showModal, closeModal } from "../../components/molecules/Modal";
 
 const styles = style.chat; /*- Home styles lies here -*/
 
@@ -127,9 +126,10 @@ class Chat extends React.PureComponent {
 			messages: [],
 			message: "",
 
-			modalEnabled: false,
-			modalData: {},
-			modalType: "",
+			modalQueue: [],			
+			// modalEnabled: false,
+			// modalData: {},
+			// modalType: "",
 		};
 
 		/*- Variables -*/
@@ -401,7 +401,7 @@ class Chat extends React.PureComponent {
 
 				/*- Check if the current user was the one who was added -*/
 				if (friend == this.suid) {
-					this.showModal("friend-request", null, {
+					showModal(this, "friend-request", null, {
 						adder: adder,
 						friendSuid: suid,
 						suid: this.suid,
@@ -445,15 +445,15 @@ class Chat extends React.PureComponent {
 
 					{/*- All messages here -*/}
 					<ScrollView onTouchStart={() => Keyboard.dismiss()} contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
-						<ChatMessage onProfilePress={() => this.showModal("profile", {username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
+						<ChatMessage onProfilePress={() => showModal(this, "profile", {username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
 						
 						{this.state.messages.map((obj, index) => {
 							/*- If the message comes from the system like when someone leaves -*/
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
-							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => this.showModal("profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
+							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage onProfilePress={() => this.showModal("profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
 						})}
 
 					</ScrollView>
@@ -482,19 +482,20 @@ class Chat extends React.PureComponent {
 				</KeyboardAvoidingView>	
 
 
-				{/*- Modal for profile -*/}
+				{/*- Modals -*/}
 				{
-					this.state.modalEnabled
-					&&
-					<Modal data={this.state.modalData} onClose={() => {
-							this.setState({
-								modalEnabled: false,
-							});
-						}}
-						onAddFriend={(suid) => this.sendFriendRequest(suid)}
-						type={this.state.modalType}
-						onFriendAccepted={(suid, friend) => this.acceptFriendRequest(suid, friend)}
-					/>	
+					/*- Get the first modal from the modalqueue -*/
+					this.state.modalQueue.map((modal, index) => (
+						index > 0 ? null :
+						<Modal
+							data={modal.data.data}
+							onClose={() => closeModal(this)}
+							key={modal.index}
+							onAddFriend={(suid) => this.sendFriendRequest(suid)}
+							type={modal.data.type}
+							onFriendAccepted={(suid, friend) => this.acceptFriendRequest(suid, friend)}
+						/>	
+					))
 				}
 
 				{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }

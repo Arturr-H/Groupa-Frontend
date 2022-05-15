@@ -32,10 +32,16 @@ const HR = ({ children, ...props }) => (
         { marginBottom: "auto" } : { marginVertical: 10 }]} {...props} />
 );
 
+const InputText = ({ children, ...props }) => (
+    <Text style={[styles.inputText, props.color && { color: props.color }]} {...props}>
+        {children}
+    </Text>
+);
+
 const BIGTEXT = ({ children, ...props }) => (
     <Text style={styles.bigtext} {...props}>
         {children}
     </Text>
 );
 
-export { H1, H2, H3, BIGTEXT, P, HR };
+export { H1, H2, H3, BIGTEXT, P, HR, InputText };

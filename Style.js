@@ -162,11 +162,6 @@ const styles = {
 			borderWidth: 2,
 			borderColor: stylevar.colors.main,
 		},
-		submitInputText: {
-			color: "#fff",
-			fontWeight: "bold",
-			fontSize: 18,
-		},
 		startButton: {
 			height: 50,
 			width: "80%",
@@ -206,7 +201,8 @@ const styles = {
 			transform: [{ translateX: -width*0.4 }],
 			opacity: 0,
 
-			borderRadius: 10,
+			overflow: "hidden",
+			borderRadius: 20,
 			...Default.border,
 
 			backgroundColor: "rgba(0, 0, 0, 0.025)",
@@ -260,25 +256,30 @@ const styles = {
 	text: StyleSheet.create({
 		h1: {
 			fontSize: REM(2.5),
-			fontWeight: "bold",
 			color: stylevar.text.default,
+
+			fontFamily: "Inter-4"
 		},
 		h2: {
 			fontSize: REM(1.8),
-			fontWeight: "bold",
 			color: stylevar.text.default,
+
+			fontFamily: "Inter-4"
 		},
 		h3: {
 			fontSize: REM(1.4),
-			fontWeight: "bold",
 			color: stylevar.text.default,
 			textAlign: "center",
 			width: "100%",
+
+			fontFamily: "Inter-2"
 		},
 		p: {
 			fontSize: REM(1),
 			fontWeight: "200",
 			color: stylevar.text.light,
+
+			fontFamily: "Inter-1"
 		},
 		bigtext: {
 			fontSize: width*0.6,
@@ -296,6 +297,11 @@ const styles = {
 			backgroundColor: stylevar.border.light,
 
 			marginVertical: 10,
+		},
+		inputText: {
+			color: "#fff",
+			fontWeight: "bold",
+			fontSize: 18,
 		},
 	}),
 
@@ -345,6 +351,8 @@ const styles = {
 			color: "#fff",
 			fontWeight: "bold",
 			fontSize: 18,
+
+			fontFamily: "Inter-2",
 		},
 	}),
 
@@ -480,6 +488,8 @@ const styles = {
 			flexShrink: 1,
 			flexWrap: "wrap",
 			lineHeight: 20,
+
+			fontFamily: "Inter-2",
 		},
 		chatMessageUserText: {
 			color: stylevar.text.light,
@@ -488,6 +498,8 @@ const styles = {
 
 			marginBottom: 5,
 			flexShrink: 1,
+
+			fontFamily: "Inter-1",
 		},
 		chatMessageAvatar: {
 			width: 40,
@@ -504,6 +516,8 @@ const styles = {
 			fontWeight: "300",
 			fontSize: 12,
 			marginLeft: "auto",
+
+			fontFamily: "Inter-1",
 		},
 		chatMessageTimestamp: {
 			color: stylevar.text.light,
@@ -511,6 +525,8 @@ const styles = {
 			fontSize: 12,
 
 			marginRight: 10,
+
+			fontFamily: "Inter-1",
 		},
 
 		systemMessageContainer: {
@@ -567,10 +583,13 @@ const styles = {
 			fontSize: REM(1),
 			fontWeight: "bold",
 			color: stylevar.text.default,
+
+			fontFamily: "Inter-3",
 		},
 		friendRowUsername: {
 			fontSize: REM(0.8),
 			color: stylevar.text.light,
+			fontFamily: "Inter-1",
 		},
 
 		accountBubble: {
@@ -695,11 +714,7 @@ const styles = {
 	
 			marginLeft: 10,
 		},
-		contentContainer: {
-			paddingHorizontal: 200,
-			marginHorizontal: 10,
-			flex: 1,
-		},
+
 		accountImageBig: {
 			width: 90,
 			height: 90,
@@ -709,51 +724,40 @@ const styles = {
 	
 			marginRight: 10,
 			zIndex: 0,
-			overflow: "hidden"
 		},
-	
-		ownedPostsContainer: {
-			flexDirection: "row",
-			flexWrap: "wrap",
-			alignItems: "center",
-			justifyContent: "space-evenly",
-			paddingHorizontal: 5,
-			paddingVertical: 10,
-		},
-		ownedPost: {
-			width: (width/2)*0.8,
-			height: (width/2)*1.2,
-			borderRadius: 10,
-			backgroundColor: "rgb(220, 220, 220)",
-	
-			borderColor: "rgb(210, 210, 210)",
-			borderWidth: 1,
-			marginVertical: 10,
-	
+		changeImageButton: {
+			position: "absolute",
+			top: 0,
+			right: 0,
+
+			width: 30,
+			height: 30,
+			borderRadius: 20,
+
+			zIndex: 1,
+			backgroundColor: stylevar.colors.secondary,
+
+			display: "flex",
 			justifyContent: "center",
-				alignItems: "center",		
+				alignItems: "center",
 		},
-		postTitle: {
-			position: "absolute",
-			bottom: 5,
-			left: 5,
-	
-			textTransform: "capitalize",
+		changeImageButtonPlus: {
 			color: "white",
+			textAlign: "center",
+			height: 18,
+			fontWeight: "800",
 		},
-		postImage: {
-			position: "absolute",
-	
-			width: "100%",
-			height: "100%",
-	
-			borderRadius: 10,
-		},
+
 	}),
 
 	camera: StyleSheet.create({
 		cameraContainer: {
 			width: 200,
+			flex: 1,
+
+			display: "flex",
+			justifyContent: "center",
+				alignItems: "center",
 
 			left: "50%",
 			transform: [{ translateX: -100 }],
@@ -766,32 +770,6 @@ const styles = {
 			overflow: "hidden",
 
 			...Default.border,
-		},
-		flipButtonContainer: {
-			position: "absolute",
-			borderRadius: 50,
-			width: 60,
-
-			borderRadius: 50,
-			overflow: "hidden",
-			borderColor: stylevar.border.light,
-			borderWidth: 1,
-		},
-		flipButton: {
-			padding: 10,
-			display: "flex",
-			justifyContent: "center",
-				alignItems: "center",
-			
-			width: "100%",
-			height: "100%",
-		},
-		flipText: {
-			fontFamily: "PoppinsBold",
-			fontWeight: "500",
-			fontSize: 12,
-			
-			color: stylevar.colors.fg,
 		},
 	}),
 };

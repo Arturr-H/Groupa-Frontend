@@ -2,7 +2,7 @@ import React from "react";
 import { View, Animated, Easing, PanResponder, Keyboard, TouchableOpacity, Text } from "react-native";
 import { styles as style, width, height, stylevar } from "../../Style";
 import { BlurView } from "expo-blur"
-import { AccountBubble, Button, H2, H3, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
+import { AccountBubble, Button, H2, H3, H1, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { Camera } from "expo-camera";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -12,7 +12,7 @@ const styles = style.input; // Modal styles lies here
 const MODAL_START_Y = -100;
 const MODAL_DURATION = 500;
 const MODAL_FAST_DURATION = 100;
-const VELOCITY_MIN = 1.3;
+const VELOCITY_MIN = 1.9;
 const center = { x: -width*0.4, y: -height*0.3 };
 
 let concurrent_modals = 0;
@@ -20,10 +20,10 @@ let concurrent_modals = 0;
 const UserProfile = (this_) => <>
     <View style={styles.modalHeader}>
         <View style={{ flex: 1 }}>
-            <H2>{this_.state.userData.displayname}</H2>
-            <P>@{this_.state.userData.username}</P>
+            <H2>{this_.data.displayname}</H2>
+            <P>@{this_.data.username}</P>
         </View>
-        <AccountBubble style={{ flex: 1 }} src={this_.state.userData.profile} onPress={() => { }} />
+        <AccountBubble style={{ flex: 1 }} src={this_.data.profile} onPress={() => { }} />
     </View>
 
     <HR />
@@ -38,7 +38,7 @@ const UserProfile = (this_) => <>
 
     <HR margin={true} />
 
-    <Button style={{ marginBottom: 10 }} onPress={() => this_.props.onAddFriend(this_.state.userData.suid)}>Add friend</Button>
+    <Button style={{ marginBottom: 10 }} onPress={() => this_.props.onAddFriend(this_.data.suid)}>Add friend</Button>
     <TileButtonContainer>
         <TileButton pos={"left"} hollow={true} onPress={() => { }}>Vote Kick</TileButton>
         <TileButton pos={"right"} hollow={true} onPress={() => { }}>Close</TileButton>
@@ -60,7 +60,21 @@ const FriendRequest = (this_) => <>
         <TileButton pos={"left"} hollow={true} onPress={() => this_.disable(true)}>Decline</TileButton>
         <TileButton pos={"right"} color={stylevar.colors.green} hollow={false} onPress={() => this_.onAccept()}>Accept</TileButton>
     </TileButtonContainer>
-</> 
+</>;
+
+const ConnectionError = (this_) => <>
+    <View style={styles.modalHeader}>
+        <H2>Connection error.</H2>
+    </View>
+
+    <HR margin={true} />
+    <HR />
+    
+    <TileButtonContainer style={{ marginBottom: 0 }}>
+        <TileButton pos={"left"} hollow={true} onPress={() => this_.leaveRoom()}>Leave</TileButton>
+        <TileButton pos={"right"} color={stylevar.colors.green} hollow={false} onPress={() => this_.componentDidMount()}>Retry</TileButton>
+    </TileButtonContainer>
+</>;
 
 class CameraView extends React.PureComponent {
     /*- Permission vairables -*/
@@ -168,6 +182,7 @@ class CameraView extends React.PureComponent {
     };
 };
 
+
 class Modal extends React.PureComponent {
     constructor(props) {
         super(props);
@@ -193,6 +208,8 @@ class Modal extends React.PureComponent {
         /*- Function bindings -*/
         this.animate = this.animate.bind(this);
         this.onAccept = this.onAccept.bind(this);
+
+        this.data = this.props.data;
 
         this.onFriendAccepted = this.props.onFriendAccepted || "";
         this.friendSuid = this.props.data && this.props.data.friendSuid || "";
@@ -368,6 +385,8 @@ class Modal extends React.PureComponent {
                         ? UserProfile(this)
                         : this.props.type === "camera"
                         ? <CameraView this_={this} />
+                        : this.props.type === "connection-error"
+                        ? ConnectionError(this)
                         : null
                     }
 
@@ -377,7 +396,9 @@ class Modal extends React.PureComponent {
     };
 }
 
+
 const showModal = (this_, type, data) => {
+
     /*- Set the modal data -*/
     this_.setState({
         modalQueue: [

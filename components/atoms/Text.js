@@ -1,4 +1,4 @@
-import { styles as style } from "../../Style";
+import { styles as style, stylevar } from "../../Style";
 import { Text, View } from "react-native";
 import React from "react";
 const styles = style.text; /*- Text styles lies here -*/
@@ -27,9 +27,14 @@ const P = ({ children, ...props }) => (
     </Text>
 );
 
+/*- Horizontal row -*/
 const HR = ({ children, ...props }) => (
     <View style={[styles.hr, props.margin ?
         { marginBottom: "auto" } : { marginVertical: 10 }]} {...props} />
+);
+/*- Vertical row -*/
+const VR = ({ children, ...props }) => (
+    <View style={[styles.vr, props.thick ? { backgroundColor: stylevar.border.thick } : {}]} {...props} />
 );
 
 const InputText = ({ children, ...props }) => (
@@ -44,4 +49,4 @@ const BIGTEXT = ({ children, ...props }) => (
     </Text>
 );
 
-export { H1, H2, H3, BIGTEXT, P, HR, InputText };
+export { H1, H2, H3, BIGTEXT, P, HR, VR, InputText };

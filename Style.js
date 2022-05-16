@@ -17,7 +17,7 @@ const stylevar = {
 	colors: {
 		main: "#fc5e5a",
 		main_inactive: "#a1a1a1",
-		secondary: "#8798dc",
+		secondary: "#5661EB",
 		green: "#2fd687",
 
 		fg: "#fff",
@@ -298,6 +298,13 @@ const styles = {
 
 			marginVertical: 10,
 		},
+		vr: {
+			width: 1,
+			height: "100%",
+			backgroundColor: stylevar.border.light,
+
+			marginHorizontal: 10,
+		},
 		inputText: {
 			color: "#fff",
 			fontWeight: "bold",
@@ -364,67 +371,55 @@ const styles = {
 
 			display: "flex",
 			flexDirection: "column",
-			justifyContent: "space-between",
-			alignItems: "center",
-		},
-
-		messageInputContainer: {
-			width: "100%",
-			display: "flex",
-			flexDirection: "row",
-
-			justifyContent: "space-between",
-			alignItems: "center",
 			justifyContent: "center",
+				alignItems: "center",
+		},
+		messageFader: {
+			width,
+			height: 150,
+
 			position: "absolute",
 			bottom: 0,
 		},
+		messageInputContainer: {
+			width: width*0.85,
+			height: 60,
+
+			display: "flex",
+			flexDirection: "row",
+			justifyContent: "space-between",
+			alignItems: "center",
+
+			backgroundColor: stylevar.colors.fg,
+			borderRadius: 50,
+
+			bottom: 50,
+			paddingHorizontal: 25,
+
+			...Default.shadow,
+		},
 		messageInput: {
-			backgroundColor: stylevar.colors.fg_second,
+			height: "100%",
+			flex: 1,
 
-			height: 55,
-			width: "90%",
-
-			padding: 15,
-			paddingHorizontal: 20,
-			borderRadius: 40,
-			marginBottom: 30,
-
-			paddingRight: 60,
-			marginTop: 20,
-
-			...Default.border,
+			// backgroundColor: "red",
 		},
 		messageSendButton: {
-			backgroundColor: stylevar.colors.fg,
+			height: 35,
+			aspectRatio: 1,
 
-			height: 45,
-			width: 45,
-
-			borderRadius: 50,
-			bottom: 35,
-			position: "absolute",
-			right: "6.5%",
-
-
-			...Default.border,
+			opacity: 0.3,
 		},
 
 		messageContainer: {
-			display: "flex",
-			flexDirection: "column",
-			justifyContent: "flex-end",
-			alignItems: "flex-start",
-			position: "relative",
-
 			width,
-			height: "100%",
+			flexGrow: 1,
+			justifyContent: "flex-end",
 
-			paddingTop: 20,
+			paddingTop: 50,
+			paddingBottom: 80,
 			paddingHorizontal: 20,
 			zIndex: 11,
-
-			paddingBottom: 110,
 		},
 		chatMessageWrapper: {
 			display: "flex",

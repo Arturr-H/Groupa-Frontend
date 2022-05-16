@@ -1,4 +1,4 @@
-import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableHighlight, TouchableOpacity, Text, Image, Keyboard } from "react-native";
+import { ScrollView, View, TextInput, KeyboardAvoidingView, Animated, TouchableOpacity, Text, Image, Keyboard, Easing } from "react-native";
 import { def, styles as style, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -6,33 +6,63 @@ import { BackButton, P, Toast } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { LinearGradient } from "expo-linear-gradient";
 import { Modal, showModal, closeModal } from "../../components/molecules/Modal";
+import { VR } from "../../components/AtomBundle"
 
 const styles = style.chat; /*- Home styles lies here -*/
 
+/*- How many ms we'll wait before noticing the user about connection problems -*/
+const CONNECTION_TIMEOUT_CHECK = 3000;
 /*- Map every message to this -*/
 class ChatMessage extends React.PureComponent {
 	constructor(props) {
 		super(props);
 
-		/*- Changeable -*/
 		this.user_owned = this.props.user_owned;
 		this.userCache = this.props.userCache;
-
 		this.placeholder = this.props.placeholder;
 
+		/*- Changeable -*/
+		this.state = {
+			xPos: new Animated.Value(this.user_owned ? 200 : -200),
+			opacity: new Animated.Value(0)
+		};
 	}
 
 	/*- Server handler -*/
 	_server_handler = new ServerHandler();
 	_server_cdn = this._server_handler.get_cdn();
 
+	/*- When the component is mounted -*/
+	componentDidMount() {
+		/*- Animate the message -*/
+		Animated.timing(this.state.xPos, {
+			toValue: 0,
+			duration: 300,
+			useNativeDriver: true,
+			easing: Easing.out(Easing.exp)
+		}).start();
+
+		/*- Animate the opacity -*/
+		Animated.timing(this.state.opacity, {
+			toValue: 1,
+			duration: 300,
+			useNativeDriver: true,
+			easing: Easing.out(Easing.exp)
+		}).start();
+	}
+
 	/*- Render -*/
 	render() {
 		return (
-			<View style={[
+			<Animated.View style={[
 				this.user_owned
 					? styles.chatMessageWrapperOwned
 					: styles.chatMessageWrapper,
+
+				{
+					transform: [ { translateX: this.state.xPos } ],
+					opacity: this.state.opacity
+				}
 			]}>
 				{/*- If the user "owns" the message we
 					don't want to display their avatar -*/
@@ -88,7 +118,7 @@ class ChatMessage extends React.PureComponent {
 						</Text>
 					</View>
 				</View>
-			</View>
+			</Animated.View>
 		);
 	}
 };
@@ -137,12 +167,17 @@ class Chat extends React.PureComponent {
 		this.suid = this.props.route.params.suid;
 		this.userCache = this.props.route.params.userCache;
 
+		/*- A unix time variable for knowing how long
+			the client has been on without a connection -*/
+		this.connection_reestablished = false;
+
 		/*- Binding functions -*/
 		this.makeNotice = this.makeNotice.bind(this);
 		this.sendMessage = this.sendMessage.bind(this);
 		this.addMessage = this.addMessage.bind(this);
 		this.leaveRoom = this.leaveRoom.bind(this);
 		this.submitEditing = this.submitEditing.bind(this);
+		this.wsConnectionError = this.wsConnectionError.bind(this);
 
 		/*- Refs -*/
 		this.scrollView = React.createRef();
@@ -376,6 +411,9 @@ class Chat extends React.PureComponent {
 					suid: this.suid,
 				},
 			}));
+
+			/*- Re-establish the conenction -*/
+			this.connection_reestablished = true;
 		};
 
 		/*- Listen for messages -*/
@@ -401,7 +439,7 @@ class Chat extends React.PureComponent {
 
 				/*- Check if the current user was the one who was added -*/
 				if (friend == this.suid) {
-					showModal(this, "friend-request", null, {
+					showModal(this, "friend-request", {
 						adder: adder,
 						friendSuid: suid,
 						suid: this.suid,
@@ -421,14 +459,28 @@ class Chat extends React.PureComponent {
 		};
 
 		/*- If there are any errors, make somethin in the furure -*/
-		this.client.onerror = () => { this.makeNotice("There was an error"); };
-	}
+		this.client.onerror = this.wsConnectionError;
+		this.client.onclose = this.wsConnectionError;
+	};
+
+	/*- Client recieves connection problems -*/
+	wsConnectionError() {
+		this.connection_reestablished = false;
+		console.log("shititnisi")
+
+		/*- If the connection is still not alive after x seconds -*/
+		setTimeout(() => {
+			if (!this.connection_reestablished) {
+				showModal(this, "connection-error", null);
+			}
+		}, CONNECTION_TIMEOUT_CHECK)
+	};
 
 	/*- Before unmount -*/
 	componentWillUnmount() {
 		this._is_mounted = false;
 		this.client.close();
-	}
+	};
 
 	render() {
 		return (
@@ -441,28 +493,33 @@ class Chat extends React.PureComponent {
                 />
 
 				{/*- Chat messages and input are here -*/}
-				<KeyboardAvoidingView style={styles.chatContainer} behavior="position">
+				<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
 
 					{/*- All messages here -*/}
-					<ScrollView onTouchStart={() => Keyboard.dismiss()} contentContainerStyle={styles.messageContainer} ref={(ref) => { this.scrollView = ref; }}>
+					<ScrollView
+						horizontal={false}
+						// onTouchStart={() => Keyboard.dismiss()}
+						contentContainerStyle={styles.messageContainer}
+						ref={(ref) => { this.scrollView = ref; }}
+					>
 						<ChatMessage onProfilePress={() => showModal(this, "profile", {username: "test", displayname: "testman", profile: "https"})} key={"index"} text={"Test object"} user_owned={false} time={1021281} userCache={{username: "test", displayname: "testman", profile: "https"}} />
 						
 						{this.state.messages.map((obj, index) => {
 							/*- If the message comes from the system like when someone leaves -*/
 							if (obj.type === "system") return <SysMessage key={index} text={obj.text} />
 
-							if(obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
+							if (obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => showModal(this, "profile", this.userCache[obj.owner].data)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
 						})}
-
 					</ScrollView>
 
 					<LinearGradient
-						style={styles.messageInputContainer}
-						locations={[0, 0.5]}
-						colors={["rgba(255, 255, 255, 0)", "rgb(255, 255, 255)"]}
-					>
+						style={styles.messageFader}
+						colors={["rgba(255, 255, 255, 0)", "rgb(255, 255, 255)", "rgb(255, 255, 255)"]}
+						locations={[0, 0.4, 1]}
+					/>
+					<View style={styles.messageInputContainer}>
 						<TextInput
 							style={styles.messageInput}
 							placeholder="Send a message..."
@@ -477,9 +534,10 @@ class Chat extends React.PureComponent {
 							onSubmitEditing={this.submitEditing}
 							maxLength={500}
 						/>
-						<TouchableHighlight onPress={this.submitEditing} underlayColor={stylevar.colors.main} style={styles.messageSendButton}><></></TouchableHighlight>
-					</LinearGradient>
-				</KeyboardAvoidingView>	
+						<VR thick={true} height={"50%"} />
+						<Image source={{ uri: "https://cdn4.iconfinder.com/data/icons/multimedia-75/512/multimedia-42-1024.png" }} style={styles.messageSendButton} />
+					</View>
+				</KeyboardAvoidingView>
 
 
 				{/*- Modals -*/}
@@ -500,15 +558,9 @@ class Chat extends React.PureComponent {
 
 				{ this.state.noticeEnabled ? <Toast text={this.state.notice} /> : null }
 				<BackButton onPress={this.leaveRoom} />
-
-				{/* <Modal data={{ adder: "artur", friendSuid: "hejsan", suid: this.suid }} onClose={() => {
-						this.setState({
-							modalEnabled: false,
-						});
-					}} onAddFriend={(suid) => this.sendFriendRequest(suid)} type={"friend-request"} />	 */}
 			</View>
 		);
-	}
+	};
 };
 
 /*- Time functions -*/

@@ -1,8 +1,8 @@
-import { ScrollView, View, TextInput, KeyboardAvoidingView, Animated, TouchableOpacity, Text, Image, Keyboard, Easing } from "react-native";
+import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableOpacity, Text, Image, Keyboard } from "react-native";
 import { def, styles as style, stylevar } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
-import { BackButton, P, Toast } from "../../components/AtomBundle";
+import { BackButton, P, Toast, Animate } from "../../components/AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { LinearGradient } from "expo-linear-gradient";
 import { Modal, showModal, closeModal } from "../../components/molecules/Modal";
@@ -10,8 +10,27 @@ import { VR } from "../../components/AtomBundle"
 
 const styles = style.chat; /*- Home styles lies here -*/
 
-/*- How many ms we'll wait before noticing the user about connection problems -*/
+/*- How many ms we'll wait before noticing
+	the user about connection problems -*/
 const CONNECTION_TIMEOUT_CHECK = 3000;
+
+/*- Every message that is owned by the same person and
+	sent within 1 minute will be merged if this is true -*/
+const MERGE_MESSAGES = true;
+
+/*- How many characters we allow as a maximum
+	sending limit, it's also used to prevent
+	two messages that toghether make asentence
+	with more than <MAX_CHARS> chars from merging -*/
+const MAX_CHARS = 500;
+
+const TEMPORARY_CHAT_MSGS = ["Hello", "What??", "Can we talk about the political and economic state of the world right now?",
+"Please add me", "What is the purpose of life, why am I here, when will I be gone? How can I be useful? And just why do I exist?",
+"I am a robot, I am not a human", "Shut upppppp", "Okay sorry", "But that doesn't make any sense...?", "Answer my question",
+"What is better, a cat or a dog?", "Do you think AI will take over the world?", "Nah", "Yeah probably", "Do you like me?"]
+
+/*- Max characters per message -*/
+
 /*- Map every message to this -*/
 class ChatMessage extends React.PureComponent {
 	constructor(props) {
@@ -21,48 +40,23 @@ class ChatMessage extends React.PureComponent {
 		this.userCache = this.props.userCache;
 		this.placeholder = this.props.placeholder;
 
-		/*- Changeable -*/
-		this.state = {
-			xPos: new Animated.Value(this.user_owned ? 200 : -200),
-			opacity: new Animated.Value(0)
-		};
+		this.xPos = this.user_owned ? 200 : -200;
+
+		this.delay = this.placeholder ? 400 : 0;
 	}
 
 	/*- Server handler -*/
 	_server_handler = new ServerHandler();
 	_server_cdn = this._server_handler.get_cdn();
 
-	/*- When the component is mounted -*/
-	componentDidMount() {
-		/*- Animate the message -*/
-		Animated.timing(this.state.xPos, {
-			toValue: 0,
-			duration: 300,
-			useNativeDriver: true,
-			easing: Easing.out(Easing.exp)
-		}).start();
-
-		/*- Animate the opacity -*/
-		Animated.timing(this.state.opacity, {
-			toValue: 1,
-			duration: 300,
-			useNativeDriver: true,
-			easing: Easing.out(Easing.exp)
-		}).start();
-	}
-
 	/*- Render -*/
 	render() {
 		return (
-			<Animated.View style={[
+			<Animate xPos={this.xPos} delay={this.delay}>
+			<View style={[
 				this.user_owned
 					? styles.chatMessageWrapperOwned
 					: styles.chatMessageWrapper,
-
-				{
-					transform: [ { translateX: this.state.xPos } ],
-					opacity: this.state.opacity
-				}
 			]}>
 				{/*- If the user "owns" the message we
 					don't want to display their avatar -*/
@@ -118,7 +112,8 @@ class ChatMessage extends React.PureComponent {
 						</Text>
 					</View>
 				</View>
-			</Animated.View>
+				</View>
+			</Animate>
 		);
 	}
 };
@@ -127,7 +122,7 @@ class ChatMessage extends React.PureComponent {
 class SysMessage extends React.PureComponent {
 	constructor(props) {
 		super(props);
-
+		
 		/*- Text -*/
 		this.text = this.props.text;
 	}
@@ -135,9 +130,11 @@ class SysMessage extends React.PureComponent {
 	/*- Render -*/
 	render() {
 		return (
-			<View {...this.props} style={styles.systemMessageContainer}>
-				<P>{this.text}</P>
-			</View>
+			<Animate xPos={-200}>
+				<View {...this.props} style={styles.systemMessageContainer}>
+					<P>{this.text}</P>
+				</View>
+			</Animate>
 		)
 	};
 };
@@ -233,32 +230,6 @@ class Chat extends React.PureComponent {
 		return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 	};
 
-	/*- Modals -*/
-	showModal(type, userObj = null, objdata = {}) {
-
-		if (userObj) {
-			/*- The users SUID -*/
-			const suid = userObj.owner;
-			
-			/*- The users profile-data -*/
-			const data = this.userCache[suid] && this.userCache[suid].data || {};
-
-			/*- Set the modal data -*/
-			this.setState({
-				modalEnabled: true,
-				modalData: { ...data },
-				modalType: type,
-			});
-		}else {
-			/*- Set the modal data -*/
-			this.setState({
-				modalEnabled: true,
-				modalData: { ...objdata },
-				modalType: type,
-			});
-		}
-	}
-
 	/*- Add message function -*/
 	addMessage(data, is_sending = false) {
 
@@ -290,18 +261,16 @@ class Chat extends React.PureComponent {
 
 		/*- if message merging was successful -*/
 		let merge_success = false;
-
 		if (this._is_mounted) {
 
 			/*- So, message grouping -*/
 			/*- We'll begin by checking if the previous
 				message is owned by the current user, if so,
 				we'll group these messages' texts together! -*/
-
 			const amount_of_messages = this.state.messages.length;
 
 			/*- Check -*/
-			if (amount_of_messages > 0) {
+			if (amount_of_messages > 0 && MERGE_MESSAGES) {
 				const last_message = {
 					text: this.state.messages[amount_of_messages - 1].text,
 					owner: this.state.messages[amount_of_messages - 1].owner,
@@ -314,6 +283,10 @@ class Chat extends React.PureComponent {
 
 					/*- And the message was sent within the last minute -*/
 					&& (time - last_message.time) < 60 * 1000
+
+					/*- And the messages texts' won't exceed
+						the maximum char limit once meged -*/
+					&& last_message.text.length + text.length <= MAX_CHARS
 				) {
 
 					merge_success = true;
@@ -424,6 +397,10 @@ class Chat extends React.PureComponent {
 			/*- Check the message types -*/
 			if (response_type === "message") {
 				this.addMessage(response.data);
+				this.addMessage({
+					type: "system",
+					text: `${response.data.messageId} : ${response.data.time} : ${response.data.sender} : ${response.data.roomid} : system:user`
+				}, true);
 			}else if (response_type === "leave") {
 				this.addMessage({
 					text: "Someone left the room",
@@ -438,7 +415,7 @@ class Chat extends React.PureComponent {
 				const adder = this.userCache[suid].data.username;
 
 				/*- Check if the current user was the one who was added -*/
-				if (friend == this.suid) {
+				if (friend == this.suid && this._is_mounted) {
 					showModal(this, "friend-request", {
 						adder: adder,
 						friendSuid: suid,
@@ -461,27 +438,44 @@ class Chat extends React.PureComponent {
 		/*- If there are any errors, make somethin in the furure -*/
 		this.client.onerror = this.wsConnectionError;
 		this.client.onclose = this.wsConnectionError;
+
+		//TODO TEMPORARY
+		setInterval(() => {
+			this.addMessage({
+				text: TEMPORARY_CHAT_MSGS[Math.floor(Math.random() * TEMPORARY_CHAT_MSGS.length)],
+				sender: "",
+				time: get_hh_mm(),
+			});
+		}, 2000);
 	};
-
-	/*- Client recieves connection problems -*/
-	wsConnectionError() {
-		this.connection_reestablished = false;
-		console.log("shititnisi")
-
-		/*- If the connection is still not alive after x seconds -*/
-		setTimeout(() => {
-			if (!this.connection_reestablished) {
-				showModal(this, "connection-error", null);
-			}
-		}, CONNECTION_TIMEOUT_CHECK)
-	};
-
+	
 	/*- Before unmount -*/
 	componentWillUnmount() {
 		this._is_mounted = false;
 		this.client.close();
 	};
 
+	/*- Client recieves connection problems -*/
+	wsConnectionError() {
+		this.connection_reestablished = false;
+
+		/*- If the connection is still not alive after x seconds -*/
+		setTimeout(() => {
+			if (!this.connection_reestablished && this._is_mounted) {
+				showModal(this, "connection-error", null);
+			}
+		}, CONNECTION_TIMEOUT_CHECK)
+	};
+
+	/*- Safe way of getting userdata without any errors -*/
+	getUserData(suid) {
+		if (this.userCache[suid]) {
+			return this.userCache[suid].data;
+		}else {
+			return {};
+		}
+	};
+	
 	render() {
 		return (
 			<View style={def.container}>
@@ -493,7 +487,7 @@ class Chat extends React.PureComponent {
                 />
 
 				{/*- Chat messages and input are here -*/}
-				<KeyboardAvoidingView style={styles.chatContainer} behavior="padding">
+				<KeyboardAvoidingView style={styles.chatContainer} behavior="position">
 
 					{/*- All messages here -*/}
 					<ScrollView
@@ -510,7 +504,7 @@ class Chat extends React.PureComponent {
 
 							if (obj.is_sending) return <ChatMessage placeholder={true} onProfilePress={() => showModal(this, "profile", obj)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={{}}  />
 							/*- If the message is owned by a user -*/
-							else return <ChatMessage onProfilePress={() => showModal(this, "profile", this.userCache[obj.owner].data)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.userCache[obj.owner].data} />
+							else return <ChatMessage onProfilePress={() => showModal(this, "profile", this.userCache[obj.owner].data)} key={index} text={obj.text} user_owned={obj.owned} time={obj.time} ids={obj.ids} userCache={this.getUserData(obj.owner)} />
 						})}
 					</ScrollView>
 
@@ -519,23 +513,25 @@ class Chat extends React.PureComponent {
 						colors={["rgba(255, 255, 255, 0)", "rgb(255, 255, 255)", "rgb(255, 255, 255)"]}
 						locations={[0, 0.4, 1]}
 					/>
-					<View style={styles.messageInputContainer}>
-						<TextInput
-							style={styles.messageInput}
-							placeholder="Send a message..."
-							onChangeText={(text) => {
-								this.setState({
-									message: text,
-								});
-							}}
-							value={this.state.message}
+					<View style={styles.messageInputWidth}>
+						<View style={styles.messageInputContainer}>
+							<TextInput
+								style={styles.messageInput}
+								placeholder="Send a message..."
+								onChangeText={(text) => {
+									this.setState({
+										message: text,
+									});
+								}}
+								value={this.state.message}
 
-							/*- Send message when enter is pressed -*/
-							onSubmitEditing={this.submitEditing}
-							maxLength={500}
-						/>
-						<VR thick={true} height={"50%"} />
-						<Image source={{ uri: "https://cdn4.iconfinder.com/data/icons/multimedia-75/512/multimedia-42-1024.png" }} style={styles.messageSendButton} />
+								/*- Send message when enter is pressed -*/
+								onSubmitEditing={this.submitEditing}
+								maxLength={MAX_CHARS}
+							/>
+							<VR thick={true} height={"50%"} />
+							<Image source={{ uri: "https://cdn4.iconfinder.com/data/icons/multimedia-75/512/multimedia-42-1024.png" }} style={styles.messageSendButton} />
+						</View>
 					</View>
 				</KeyboardAvoidingView>
 

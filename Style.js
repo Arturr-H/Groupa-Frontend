@@ -381,6 +381,12 @@ const styles = {
 			position: "absolute",
 			bottom: 0,
 		},
+		messageInputWidth: {
+			width,
+			display: "flex",
+			justifyContent: "center",
+			alignItems: "center",
+		},
 		messageInputContainer: {
 			width: width*0.85,
 			height: 60,

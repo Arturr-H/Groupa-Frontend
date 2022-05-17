@@ -7,6 +7,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ServerHandler } from "../../func/ServerHandler";
 import { Modal, showModal, closeModal } from "../../components/molecules/Modal";
 import { BlurView } from "expo-blur";
+import { Debug } from "../../components/atoms/DebugMenu";
+
 const styles = { ...style.lobby, ...style.chat } /*- Lobby styles lies here -*/
 
 /*- The websocket client -*/
@@ -368,6 +370,17 @@ class Lobby extends React.PureComponent {
 	render() {
 		return (
 			<View style={def.container}>
+
+				<Debug>
+					c:{this.state.connectStausCode}&nbsp;|&nbsp;
+					s:{this.state.suid}&nbsp;|&nbsp;
+					h:{this.state.isHost.toString()}&nbsp;|
+					rID:{this.state.roomid}&nbsp;|&nbsp;
+					f:{this.state.roomFound.toString()}&nbsp;|&nbsp;
+					ul:{this.state.users.length}&nbsp;|&nbsp;
+					url:{this._server_url}&nbsp;|&nbsp;
+					m:{this._is_mounted.toString()}
+				</Debug>
 				{
 					(
 						/*- If the room was found and the join request was succesfully sent -*/

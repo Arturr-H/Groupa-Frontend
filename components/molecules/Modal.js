@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Animated, Easing, PanResponder, Keyboard, TouchableOpacity, Text } from "react-native";
-import { styles as style, width, height, stylevar } from "../../Style";
+import { View, Animated, Easing, PanResponder, Keyboard, Text } from "react-native";
+import { styles as style, width, height, stylevar, theme } from "../../Style";
 import { BlurView } from "expo-blur"
-import { AccountBubble, Button, H2, H3, H1, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
+import { AccountBubble, Button, H2, H3, P, HR, TileButton, TileButtonContainer } from "../AtomBundle";
 import { ServerHandler } from "../../func/ServerHandler";
 import { Camera } from "expo-camera";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -376,7 +376,7 @@ class Modal extends React.PureComponent {
             }]}
                 {...this.panResponder.panHandlers}
             >
-                <BlurView intensity={100} style={styles.modal} tint={"default"}>
+                <BlurView intensity={100} style={styles.modal} tint={theme}>
 
                     {
                           this.props.type === "friend-request"

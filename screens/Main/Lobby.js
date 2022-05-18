@@ -1,5 +1,5 @@
 import { View, Image, ActivityIndicator, Text, TouchableOpacity, Easing } from "react-native";
-import { def, styles as style } from "../../Style";
+import { def, styles as style, theme } from "../../Style";
 import React from "react";
 import { BIGTEXT, P, StartButton, Toast } from "../../components/AtomBundle";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
@@ -73,7 +73,7 @@ class UserPfp extends React.PureComponent {
 				onPress={() => this.props.onClick(this.userData)}
 				style={styles.lobbyPfpWrapper}
 			>
-				<BlurView style={styles.lobbyPfpContainer} intensity={20}>
+				<BlurView style={styles.lobbyPfpContainer} intensity={20} tint={theme}>
 					<Image
 						key={this.index}
 						source={{ uri: this.get("profile") }}
@@ -233,7 +233,7 @@ class Lobby extends React.PureComponent {
 					setTimeout(() => {
 						if (!this._is_mounted) return;
 						else request_backend(n-1);
-					}, 500);
+					}, 2000);
 				}else{
 					this.setState({
 						connectStaus: "Failed to connect to servers.",
@@ -307,7 +307,7 @@ class Lobby extends React.PureComponent {
 				}else {
 					setTimeout(() => {
 						wss_connect(n-1);
-					}, 500);
+					}, 2000);
 				}
 			};
 

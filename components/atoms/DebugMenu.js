@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { BlurView } from "expo-blur";
+import { theme } from "../../Style";
 
 const styles = StyleSheet.create({
     container: {
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
 });
 export const Debug = (props) => {
     return (
-        <BlurView tint="light" intensity={100} style={styles.container}>
+        <BlurView tint={theme} intensity={100} style={styles.container}>
             <Text>{props.children}</Text>
         </BlurView>
     );

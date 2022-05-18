@@ -1,5 +1,5 @@
 import { ScrollView, View, TextInput, KeyboardAvoidingView, TouchableOpacity, Text, Image, Keyboard } from "react-native";
-import { def, styles as style, stylevar } from "../../Style";
+import { def, styles as style, stylevar, theme } from "../../Style";
 import React from "react";
 import { w3cwebsocket as W3CWebSocket } from "websocket";
 import { BackButton, P, Toast, Animate } from "../../components/AtomBundle";
@@ -53,65 +53,67 @@ class ChatMessage extends React.PureComponent {
 	render() {
 		return (
 			<Animate xPos={this.xPos} delay={this.delay}>
-			<View style={[
-				this.user_owned
-					? styles.chatMessageWrapperOwned
-					: styles.chatMessageWrapper,
-			]}>
-				{/*- If the user "owns" the message we
-					don't want to display their avatar -*/
-					this.user_owned
-					? null
-					: <TouchableOpacity activeOpacity={0.8} onPress={() => this.props.onProfilePress()}>
-						<Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
-					</TouchableOpacity>
-				}
 				<View style={[
-					/*- We want dependent styles (if message is owned or not) -*/
 					this.user_owned
-						? styles.chatMessageOwned
-						: styles.chatMessage,
-
-					this.placeholder
-						? styles.chatMessagePlaceholder
-						: {}
+						? styles.chatMessageWrapperOwned
+						: styles.chatMessageWrapper,
 				]}>
-					{/*- Text area -*/}
-					<View style={styles.chatMessageTextArea}>
-						{
-							/*- Only show the username if message is not owned -*/
-							<Text style={[styles.chatMessageUserText, 
-								this.user_owned
-									? { color: "white" }
-									: null,
+					{/*- If the user "owns" the message we
+						don't want to display their avatar -*/
+						this.user_owned
+						? null
+						: <TouchableOpacity activeOpacity={0.8} onPress={() => this.props.onProfilePress()}>
+							<Image source={{ uri: this.userCache.profile }} style={styles.chatMessageAvatar} />
+						</TouchableOpacity>
+					}
+					<View style={[
+						/*- We want dependent styles (if message is owned or not) -*/
+						this.user_owned
+							? styles.chatMessageOwned
+							: styles.chatMessage,
 
-								this.user_owned
-									? { textAlign: "right" }
-									: { textAlign: "left" },
-							]}>
-								{
-									this.user_owned
-										? "You"
-										: "@" + this.userCache.username
-								} : {get_hh_mm(this.props.time)}
-							</Text>
-						}
-						<Text style={[
-							styles.chatMessageText,
+						this.placeholder
+							? styles.chatMessagePlaceholder
+							: {}
+					]}>
+						{/*- Text area -*/}
+						<View style={styles.chatMessageTextArea}>
 							{
-								color: this.user_owned
-									? stylevar.text.white
-									: stylevar.text.default,
+								/*- Only show the username if message is not owned -*/
+								<Text style={[styles.chatMessageUserText, 
+									this.user_owned
+										? { color: "white" }
+										: null,
 
-								textAlign: this.user_owned
-									? "right"
-									: "left",
+									this.user_owned
+										? { textAlign: "right" }
+										: { textAlign: "left" },
+								]}>
+									{
+										this.user_owned
+											? "You"
+											: "@" + this.userCache.username
+									} : {get_hh_mm(this.props.time)}
+								</Text>
 							}
-						]} numberOfLines={20}>
-							{this.props.text}
-						</Text>
+							<Text style={[
+								styles.chatMessageText,
+								{
+									color: this.user_owned
+										? theme == "dark"
+											? stylevar.text.default
+											: stylevar.text.white
+										: stylevar.text.default,
+
+									textAlign: this.user_owned
+										? "right"
+										: "left",
+								}
+							]} numberOfLines={20}>
+								{this.props.text}
+							</Text>
+						</View>
 					</View>
-				</View>
 				</View>
 			</Animate>
 		);
@@ -325,8 +327,11 @@ class Chat extends React.PureComponent {
 			});
 
 			/*- Scroll to the bottom -*/
-			this.scrollView.scrollToEnd({ animated: true });
+			// this.scrollView.current.scrollToEnd({ animated: true });
 		}
+
+		/*- Scroll to the bottom -*/
+		// if(this.scrollView) this.scrollView.current.scrollToEnd({ animated: true });
 	};
 
 	/*- Leave room -*/
@@ -440,13 +445,13 @@ class Chat extends React.PureComponent {
 		this.client.onclose = this.wsConnectionError;
 
 		//TODO TEMPORARY
-		setInterval(() => {
-			this.addMessage({
-				text: TEMPORARY_CHAT_MSGS[Math.floor(Math.random() * TEMPORARY_CHAT_MSGS.length)],
-				sender: "",
-				time: get_hh_mm(),
-			});
-		}, 2000);
+		// setInterval(() => {
+		// 	this.addMessage({
+		// 		text: TEMPORARY_CHAT_MSGS[Math.floor(Math.random() * TEMPORARY_CHAT_MSGS.length)],
+		// 		sender: "",
+		// 		time: get_hh_mm(),
+		// 	});
+		// }, 8000);
 	};
 	
 	/*- Before unmount -*/
@@ -482,7 +487,7 @@ class Chat extends React.PureComponent {
 
 				{/*- Top gradient-overlay -*/}
 				<LinearGradient
-                    colors={["rgb(255, 255, 255)", "rgba(255, 255, 255, 0)"]}
+                    colors={[stylevar.colors.fg, stylevar.colors.fg_invisible]}
                 	style={styles.gradientOverlay}
                 />
 
@@ -510,7 +515,7 @@ class Chat extends React.PureComponent {
 
 					<LinearGradient
 						style={styles.messageFader}
-						colors={["rgba(255, 255, 255, 0)", "rgb(255, 255, 255)", "rgb(255, 255, 255)"]}
+						colors={[stylevar.colors.fg_invisible, stylevar.colors.fg, stylevar.colors.fg]}
 						locations={[0, 0.4, 1]}
 					/>
 					<View style={styles.messageInputWidth}>
@@ -524,10 +529,12 @@ class Chat extends React.PureComponent {
 									});
 								}}
 								value={this.state.message}
+								keyboardAppearance={theme}
 
 								/*- Send message when enter is pressed -*/
 								onSubmitEditing={this.submitEditing}
 								maxLength={MAX_CHARS}
+								placeholderTextColor={stylevar.colors.placeholder}
 							/>
 							<VR thick={true} height={"50%"} />
 							<Image source={{ uri: "https://cdn4.iconfinder.com/data/icons/multimedia-75/512/multimedia-42-1024.png" }} style={styles.messageSendButton} />

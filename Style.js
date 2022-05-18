@@ -3,31 +3,68 @@ import { StyleSheet, Dimensions } from "react-native";
 /*- Sometimes % doens't work -*/
 const { width, height } = Dimensions.get("window");
 
-/*- Some style-variables -*/
-const stylevar = {
-	border: {
-		thick: "#ccc",
-		light: "rgb(240, 240, 240)"
-	},
-	text: {
-		default: "#000",
-		light: "#999",
-		white: "#fff",
-	},
-	colors: {
-		main: "#fc5e5a",
-		main_inactive: "#a1a1a1",
-		secondary: "#5661EB",
-		green: "#2fd687",
+/*- The current UI theme -*/
+const theme = "light";
 
-		fg: "#fff",
-		fg_second: "rgb(245, 245, 245)",
-		fg_transparent: "rgba(230, 230, 230, 0.5)",
+/*- All themes -*/
+const themes = {
+	light: {
+		border: {
+			thick: "#ccc",
+			light: "rgb(240, 240, 240)"
+		},
+		text: {
+			default: "#000",
+			light: "#999",
+			white: "#fff",
+		},
+		colors: {
+			main: "#fc5e5a",
+			main_inactive: "#a1a1a1",
+			secondary: "#5661EB",
+			green: "#2fd687",
+	
+			fg: "#fff",
+			fg_second: "rgb(245, 245, 245)",
+			fg_transparent: "rgba(230, 230, 230, 0.5)",
+			fg_invisible: "#ffffff00",
+			placeholder: "#ccc",
+		},
+		toast: {
+			height: 60,
+		}
 	},
-	toast: {
-		height: 60,
+	dark: {
+		border: {
+			thick: "#262431",
+			light: "#373445"
+		},
+		text: {
+			default: "#fff",
+			light: "#888",
+			white: "#000",
+		},
+		colors: {
+			main: "#fc5e5a",
+			main_inactive: "#a1a1a1",
+			secondary: "#5661EB",
+			green: "#2fd687",
+	
+			fg: "#312e3c",
+			fg_second: "#3a3647",
+			fg_transparent: "rgba(230, 230, 230, 0.5)",
+			fg_invisible: "#312e3c00",
+			placeholder: "#595564",
+		},
+		toast: {
+			height: 60,
+		}
 	}
-}
+};
+
+/*- Some style-variables -*/
+const stylevar = themes[theme];
+
 /*- Default styles -*/
 const Default = {
 	border: {
@@ -40,7 +77,7 @@ const Default = {
 			width: 0,
 			height: 10,
 		},
-		shadowOpacity: 0.175,
+		shadowOpacity: 0.2,
 		shadowRadius: 15,
 		elevation: 1,
 	}
@@ -52,12 +89,12 @@ const REM = (num) => num * 16;
 const def = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#fff",
+		backgroundColor: stylevar.colors.fg,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 	accountContainer: {
-		backgroundColor: "#fff",
+		backgroundColor: stylevar.colors.fg,
 		display: "flex",
 		flexDirection: "column",
 
@@ -82,6 +119,8 @@ const def = StyleSheet.create({
 
 		paddingBottom: 20,
 		paddingTop: 40,
+
+		backgroundColor: stylevar.colors.fg_second,
 	},
 });
 
@@ -285,7 +324,7 @@ const styles = {
 			fontSize: width*0.6,
 			fontWeight: "900",
 			width: width*2,
-			color: "rgb(240, 240, 240)",
+			color: stylevar.colors.fg_second,
 			fontFamily: "PoppinsBold",
 			position: "absolute",
 
@@ -407,7 +446,7 @@ const styles = {
 		messageInput: {
 			height: "100%",
 			flex: 1,
-
+			color: stylevar.text.default,
 			// backgroundColor: "red",
 		},
 		messageSendButton: {
@@ -491,6 +530,7 @@ const styles = {
 			lineHeight: 20,
 
 			fontFamily: "Inter-2",
+			color: stylevar.text.default,
 		},
 		chatMessageUserText: {
 			color: stylevar.text.light,
@@ -508,7 +548,7 @@ const styles = {
 			borderRadius: 25,
 			marginRight: 10,
 
-			backgroundColor: "blue",
+			backgroundColor: stylevar.colors.fg_second,
 			marginTop: "auto"
 		},
 
@@ -781,4 +821,5 @@ export {
 	stylevar,
 	Default,
 	height, width,
+	theme,
 }
